@@ -14,6 +14,12 @@ DEBUG = 'RENDER' not in os.environ
 
 ALLOWED_HOSTS = ['*'] # In production, restrict this to your render URL later
 
+if 'RENDER' in os.environ:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
+
 # Application definition
 
 INSTALLED_APPS = [
