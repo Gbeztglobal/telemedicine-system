@@ -1,0 +1,23 @@
+from django.db import models
+from accounts.models import User
+
+class Message(models.Model):
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
+    text_content = models.TextField(blank=True, null=True)
+    voice_note = models.FileField(upload_to='voice_notes/', blank=True, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"From {self.sender.username} to {self.receiver.username} at {self.timestamp}"
+
+class CallSession(models.Model):
+    caller = models.ForeignKey(User, on_delete=models.CASCADE, related_name='outgoing_calls')
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='incoming_calls')
+    started_at = models.DateTimeField(auto_now_add=True)
+    ended_at = models.DateTimeField(blank=True, null=True)
+    status = models.CharField(max_length=20, default='ongoing') # ongoing, ended, rejected
+
+    def __str__(self):
+        return f"Call from {self.caller.username} to {self.receiver.username}"

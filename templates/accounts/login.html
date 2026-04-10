@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="auth-wrapper mt-5">
+    <div class="card p-4">
+        <h3 class="theme-header text-center">Login</h3>
+        <form method="POST">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="mb-3">
+                <label class="form-label fw-bold">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                <div class="text-danger small mt-1">
+                    {{ field.errors|join:", " }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-main w-100 fw-bold">Login</button>
+        </form>
+        <div class="mt-3 text-center">
+            Don't have an account? <a href="{% url 'register' %}" class="text-main-theme">Register</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.querySelectorAll('input').forEach(el => {
+        el.classList.add('form-control');
+    });
+</script>
+{% endblock %}

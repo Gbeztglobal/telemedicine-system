@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+        <div class="card p-4">
+            <h3 class="theme-header text-center"><i class="bi bi-file-earmark-medical"></i> Issue Prescription</h3>
+            
+            <div class="mb-4 p-3 bg-light rounded border">
+                <h5>Patient: {{ req.patient.first_name }} {{ req.patient.last_name }}</h5>
+                <p class="mb-1"><strong>Request Details:</strong></p>
+                <p class="text-muted">{{ req.patient_notes }}</p>
+            </div>
+            
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Doctor's Comments & Prescription <span class="text-danger">*</span></label>
+                    <textarea class="form-control" name="doctor_comments" rows="5" required placeholder="Write the actual prescription and comments here..."></textarea>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-main fw-bold"><i class="bi bi-check-circle-fill"></i> Approve & Issue Prescription</button>
+                    <a href="{% url 'doctor_dashboard' %}" class="btn btn-outline-secondary">Back to Dashboard</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

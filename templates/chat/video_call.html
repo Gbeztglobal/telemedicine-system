@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mt-3">
+    <div class="col-md-12 text-center">
+        <h4 class="mb-3">Video Call with {{ target_user.first_name }} {{ target_user.last_name }}</h4>
+        
+        <div class="video-container shadow-lg">
+            <video id="remoteVideo" autoplay playsinline></video>
+            <video id="localVideo" autoplay playsinline muted></video>
+        </div>
+        
+        <div class="call-controls mt-3">
+            <button id="startCallBtn" class="btn btn-success btn-lg rounded-circle" style="width:60px; height:60px;"><i class="bi bi-telephone-fill"></i></button>
+            <button id="endCallBtn" class="btn btn-danger btn-lg rounded-circle d-none" style="width:60px; height:60px;"><i class="bi bi-telephone-x-fill"></i></button>
+            <button id="muteBtn" class="btn btn-secondary btn-lg rounded-circle" style="width:60px; height:60px;"><i class="bi bi-mic-fill"></i></button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- WebRTC Logic -->
+{{ target_user.id|json_script:"target-user-id" }}
+<script>
+    const targetUserId = JSON.parse(document.getElementById('target-user-id').textContent);
+    const localVideo = document.getElementById('localVideo');
+    const remoteVideo = document.getElementById('remoteVideo');
+    const startCallBtn = document.getElementById('startCallBtn');
+    const endCallBtn = document.getElementById('endCallBtn');
+    
+    let localStream;
+    let peerConnection;
+    const servers = {
+        iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+    };
+
+    // WebSocket Signaling setup
+    const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+    const chatSocket = new WebSocket(
+        wsScheme + '://' + window.location.host + '/ws/call/'
+    );
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const action = data.action;
+        
+        if(action === 'offer') {
+            handleOffer(data.payload, data.caller_id);
+        } else if (action === 'answer') {
+            handleAnswer(data.payload);
+        } else if (action === 'ice-candidate') {
+            handleIceCandidate(data.payload);
+        }
+    };
+
+    startCallBtn.onclick = async () => {
+        startCallBtn.classList.add('d-none');
+        endCallBtn.classList.remove('d-none');
+        
+        localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
+        localVideo.srcObject = localStream;
+        
+        peerConnection = new RTCPeerConnection(servers);
+        localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+        
+        peerConnection.ontrack = (event) => {
+            remoteVideo.srcObject = event.streams[0];
+        };
+        
+        peerConnection.onicecandidate = (event) => {
+            if (event.candidate) {
+                sendSignal('ice-candidate', event.candidate);
+            }
+        };
+
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+        sendSignal('offer', offer);
+    };
+
+    async function handleOffer(offer, callerId) {
+        if (!peerConnection) {
+            startCallBtn.classList.add('d-none');
+            endCallBtn.classList.remove('d-none');
+            
+            localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
+            localVideo.srcObject = localStream;
+            
+            peerConnection = new RTCPeerConnection(servers);
+            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+            
+            peerConnection.ontrack = (event) => {
+                remoteVideo.srcObject = event.streams[0];
+            };
+            
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    sendSignal('ice-candidate', event.candidate, callerId);
+                }
+            };
+        }
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+        sendSignal('answer', answer, callerId);
+    }
+
+    async function handleAnswer(answer) {
+        if (!peerConnection.currentRemoteDescription) {
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+        }
+    }
+
+    async function handleIceCandidate(candidate) {
+        if (peerConnection) {
+            await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+        }
+    }
+
+    function sendSignal(action, payload, specificTarget = null) {
+        chatSocket.send(JSON.stringify({
+            'action': action,
+            'target_id': specificTarget || targetUserId,
+            'payload': payload
+        }));
+    }
+
+    endCallBtn.onclick = () => {
+        if(peerConnection) peerConnection.close();
+        if(localStream) localStream.getTracks().forEach(track => track.stop());
+        window.location.href = "{% url 'dashboard' %}";
+    };
+</script>
+{% endblock %}

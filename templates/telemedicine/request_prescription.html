@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+        <div class="card p-4">
+            <h3 class="theme-header text-center"><i class="bi bi-file-medical"></i> Request Prescription</h3>
+            <p class="text-muted text-center">Describe the medication you need or the symptoms you are targeting.</p>
+            
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Prescription Details / Need <span class="text-danger">*</span></label>
+                    <textarea class="form-control" name="patient_notes" rows="4" required placeholder="Describe what medication you need..."></textarea>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-main fw-bold"><i class="bi bi-send-fill"></i> Send Request to Health Worker</button>
+                    <a href="{% url 'patient_dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

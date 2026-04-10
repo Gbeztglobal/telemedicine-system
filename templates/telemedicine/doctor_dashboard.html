@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-5 mt-3">
+    <!-- Profile Sidebar -->
+    <div class="col-lg-4 mb-4">
+        <div class="card p-4 text-center hover-lift h-100">
+            <div class="position-relative d-inline-block mx-auto mb-4">
+                {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" class="rounded-circle shadow" width="140" height="140" style="object-fit:cover; border: 4px solid var(--main-theme);" alt="Profile Picture">
+                {% else %}
+                    <div class="bg-secondary rounded-circle mx-auto shadow d-flex align-items-center justify-content-center text-white" style="width:140px; height:140px; border: 4px solid var(--main-theme); font-size: 3rem;">
+                        <i class="bi bi-person"></i>
+                    </div>
+                {% endif %}
+                <span class="position-absolute bottom-0 start-100 translate-middle p-2 bg-success border border-light rounded-circle" title="Active Account"></span>
+            </div>
+            <h3 class="fw-bold mb-1">Dr. {{ user.last_name }}</h3>
+            <p class="text-muted mb-3">{{ user.email }}</p>
+            <div class="d-flex justify-content-center gap-2 mb-4">
+                <span class="badge bg-primary px-3 py-2 rounded-pill"><i class="bi bi-star-fill text-warning"></i> Health Worker</span>
+                <span class="badge bg-light text-dark border px-3 py-2 rounded-pill"><i class="bi bi-telephone"></i> {{ user.phone_number }}</span>
+            </div>
+            
+            <hr class="text-muted opacity-25">
+            
+            <div class="row mt-4 text-center">
+                <div class="col-6 border-end">
+                    <h3 class="fw-bold text-main-theme">{{ prescription_requests.count|default:"0" }}</h3>
+                    <p class="text-muted small text-uppercase fw-bold">Pending<br>Requests</p>
+                </div>
+                <div class="col-6">
+                    <h3 class="fw-bold text-accent">{{ patients.count|default:"0" }}</h3>
+                    <p class="text-muted small text-uppercase fw-bold">Active<br>Patients</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content Area -->
+    <div class="col-lg-8">
+        
+        <!-- Prescription Requests -->
+        <h4 class="theme-header d-flex align-items-center">
+            <span class="dashboard-stat-icon me-3"><i class="bi bi-file-earmark-medical"></i></span>
+            Action Required: Prescription Requests
+        </h4>
+        
+        {% if prescription_requests %}
+            <div class="row g-3 mb-5">
+                {% for req in prescription_requests %}
+                <div class="col-12">
+                    <div class="card p-4 hover-lift shadow-sm border-start border-4 border-warning">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="d-flex align-items-center">
+                                {% if req.patient.profile_picture %}
+                                    <img src="{{ req.patient.profile_picture.url }}" class="rounded-circle me-3 shadow-sm" width="50" height="50" style="object-fit:cover;">
+                                {% else %}
+                                    <div class="bg-secondary rounded-circle me-3 d-flex align-items-center justify-content-center text-white shadow-sm" style="width:50px; height:50px;"><i class="bi bi-person"></i></div>
+                                {% endif %}
+                                <div>
+                                    <h6 class="mb-0 fw-bold">{{ req.patient.first_name }} {{ req.patient.last_name }}</h6>
+                                    <small class="text-muted"><i class="bi bi-clock me-1"></i>{{ req.created_at|timesince }} ago</small>
+                                </div>
+                            </div>
+                            <a href="{% url 'review_prescription' req.id %}" class="btn btn-accent shadow-sm fw-bold px-4 rounded-pill">
+                                <i class="bi bi-pencil-square me-2"></i> Review
+                            </a>
+                        </div>
+                        <div class="bg-light p-3 rounded text-secondary border">
+                            "{{ req.patient_notes }}"
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="card p-5 text-center mb-5 bg-transparent border-2 border-dashed border-secondary shadow-none">
+                <i class="bi bi-check-circle text-success mb-3" style="font-size: 3rem;"></i>
+                <h5 class="text-muted">All Caught Up!</h5>
+                <p class="text-muted mb-0">There are no pending prescription requests.</p>
+            </div>
+        {% endif %}
+
+        <!-- Patient Directory -->
+        <h4 class="theme-header mt-5 d-flex align-items-center">
+            <span class="dashboard-stat-icon me-3"><i class="bi bi-people-fill"></i></span>
+            Patient Directory
+        </h4>
+        
+        <div class="card shadow-sm border-0 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="py-3 px-4 text-muted text-uppercase" style="font-size: 0.8rem;">Patient</th>
+                            <th class="py-3 px-4 text-muted text-uppercase" style="font-size: 0.8rem;">Contact</th>
+                            <th class="py-3 px-4 text-end text-muted text-uppercase" style="font-size: 0.8rem;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for patient in patients %}
+                        <tr>
+                            <td class="px-4 py-3">
+                                <div class="d-flex align-items-center">
+                                    {% if patient.profile_picture %}
+                                        <img src="{{ patient.profile_picture.url }}" class="rounded-circle me-3 shadow-sm border" width="45" height="45" style="object-fit:cover;">
+                                    {% else %}
+                                        <div class="bg-secondary rounded-circle me-3 d-flex align-items-center justify-content-center text-white shadow-sm" style="width:45px; height:45px;"><i class="bi bi-person"></i></div>
+                                    {% endif %}
+                                    <div>
+                                        <strong class="text-dark">{{ patient.first_name }} {{ patient.last_name }}</strong><br>
+                                        <small class="text-muted">{{ patient.email }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 text-secondary">
+                                <i class="bi bi-telephone-fill me-2 text-muted"></i>{{ patient.phone_number }}
+                            </td>
+                            <td class="px-4 py-3 text-end">
+                                <a href="{% url 'video_call' patient.id %}" class="btn btn-sm btn-main rounded-pill px-3 shadow-sm">
+                                    <i class="bi bi-camera-video-fill me-1"></i> Start Call
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if not patients %}
+            <div class="p-4 text-center text-muted">No patients registered yet.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

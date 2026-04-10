@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-5 mt-3">
+    <!-- Profile Sidebar -->
+    <div class="col-lg-4 mb-4">
+        <div class="card p-4 text-center hover-lift h-100">
+            <div class="position-relative d-inline-block mx-auto mb-4">
+                {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" class="rounded-circle shadow" width="140" height="140" style="object-fit:cover; border: 4px solid var(--accent-theme);" alt="Profile Picture">
+                {% else %}
+                    <div class="bg-secondary rounded-circle mx-auto shadow d-flex align-items-center justify-content-center text-white" style="width:140px; height:140px; border: 4px solid var(--accent-theme); font-size: 3rem;">
+                        <i class="bi bi-person"></i>
+                    </div>
+                {% endif %}
+                <span class="position-absolute bottom-0 start-100 translate-middle p-2 bg-success border border-light rounded-circle" title="Active Account"></span>
+            </div>
+            <h3 class="fw-bold mb-1">{{ user.first_name }} {{ user.last_name }}</h3>
+            <p class="text-muted mb-3">{{ user.email }}</p>
+            <div class="d-flex justify-content-center gap-2 mb-4">
+                <span class="badge bg-main-theme px-3 py-2 rounded-pill"><i class="bi bi-person-badge"></i> Patient</span>
+                <span class="badge bg-light text-dark border px-3 py-2 rounded-pill"><i class="bi bi-telephone"></i> {{ user.phone_number }}</span>
+            </div>
+            
+            <hr class="text-muted opacity-25">
+            <h6 class="text-start text-muted text-uppercase fw-bold mt-3 mb-3" style="font-size: 0.8rem;">Quick Actions</h6>
+            
+            <div class="d-grid gap-3">
+                <a href="{% url 'auto_diagnose' %}" class="btn btn-main btn-lg fw-bold d-flex align-items-center justify-content-center shadow-sm">
+                    <i class="bi bi-heart-pulse-fill me-2 fs-5 text-accent"></i> AI Auto-Diagnose
+                </a>
+                <a href="{% url 'request_prescription' %}" class="btn btn-outline-primary btn-lg fw-bold d-flex align-items-center justify-content-center shadow-sm" style="border-color: var(--main-theme); color: var(--main-theme);">
+                    <i class="bi bi-file-earmark-medical-fill me-2 fs-5"></i> Request Prescription
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content Area -->
+    <div class="col-lg-8">
+        <!-- Diagnoses Section -->
+        <h4 class="theme-header d-flex align-items-center">
+            <span class="dashboard-stat-icon me-3"><i class="bi bi-journal-medical"></i></span>
+            Recent Health Assessments
+        </h4>
+        
+        {% if diagnoses %}
+            <div class="row g-3 mb-5">
+                {% for d in diagnoses %}
+                <div class="col-md-6">
+                    <div class="card p-4 hover-lift h-100 shadow-sm border-0" style="border-left: 4px solid {% if d.malaria_risk == 'High' or d.cholera_risk == 'High' %}#dc3545{% elif d.malaria_risk == 'Medium' or d.cholera_risk == 'Medium' %}#ffc107{% else %}#198754{% endif %} !important;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="mb-0 fw-bold text-muted">{{ d.created_at|date:"M d, Y" }}</h6>
+                            <small class="text-muted">{{ d.created_at|timesince }} ago</small>
+                        </div>
+                        <p class="mb-3 text-secondary small" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"><strong>Symptoms:</strong> {{ d.symptoms }}</p>
+                        
+                        <div class="d-flex gap-2 mb-3">
+                            <span class="badge rounded-pill {% if d.malaria_risk == 'High' %}bg-danger{% elif d.malaria_risk == 'Medium' %}bg-warning text-dark{% else %}bg-success{% endif %}">Malaria: {{ d.malaria_risk }}</span>
+                            <span class="badge rounded-pill {% if d.cholera_risk == 'High' %}bg-danger{% elif d.cholera_risk == 'Medium' %}bg-warning text-dark{% else %}bg-success{% endif %}">Cholera: {{ d.cholera_risk }}</span>
+                        </div>
+                        
+                        <div class="mt-auto pt-3 border-top">
+                            <small class="text-main-theme fw-bold"><i class="bi bi-info-circle-fill me-1"></i> Advice: {{ d.suggested_steps }}</small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="card p-5 text-center mb-5 border-dashed bg-transparent border-2 border-secondary shadow-none">
+                <i class="bi bi-clipboard2-pulse text-muted mb-3" style="font-size: 3rem;"></i>
+                <h5 class="text-muted">No Health Assessments Yet</h5>
+                <p class="text-muted mb-0">Use the AI Auto-Diagnose tool to evaluate your symptoms.</p>
+            </div>
+        {% endif %}
+        
+        <!-- Prescriptions Section -->
+        <h4 class="theme-header mt-5 d-flex align-items-center">
+            <span class="dashboard-stat-icon me-3"><i class="bi bi-file-earmark-text-fill"></i></span>
+            Prescription Requests
+        </h4>
+        
+        {% if prescription_requests %}
+            <div class="list-group shadow-sm">
+                {% for req in prescription_requests %}
+                <div class="list-group-item list-group-item-action p-4 border-0 mb-2 rounded card hover-lift {% if req.status == 'reviewed' %}border-start border-4 border-success{% else %}border-start border-4 border-warning{% endif %}">
+                    <div class="d-flex w-100 justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0 fw-bold"><i class="bi bi-calendar-event me-2"></i>{{ req.created_at|date:"F d, Y" }}</h6>
+                        <span class="badge rounded-pill {% if req.status == 'pending' %}bg-warning text-dark{% else %}bg-success{% endif %} px-3 py-2">
+                            {% if req.status == 'pending' %}<i class="bi bi-clock-history me-1"></i> Under Review{% else %}<i class="bi bi-check-circle-fill me-1"></i> Approved{% endif %}
+                        </span>
+                    </div>
+                    <p class="mb-3 text-secondary mt-2">"{{ req.patient_notes }}"</p>
+                    
+                    {% if req.status == 'reviewed' %}
+                        <div class="bg-light p-3 rounded-3 border mt-3 position-relative">
+                            <div class="position-absolute top-0 start-0 translate-middle ms-4 mt-0 bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 24px; height: 24px;"><i class="bi bi-check" style="font-size: 1rem;"></i></div>
+                            <h6 class="fw-bold text-success mb-2 ms-2"><i class="bi bi-person-badge-fill me-2"></i>Dr. {{ req.doctor.last_name }}</h6>
+                            <p class="mb-0 ms-2 text-dark">{{ req.doctor_comments }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="card p-5 text-center bg-transparent border-2 border-dashed border-secondary shadow-none">
+                <i class="bi bi-capsule text-muted mb-3" style="font-size: 3rem;"></i>
+                <h5 class="text-muted">No Prescriptions Requested</h5>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
