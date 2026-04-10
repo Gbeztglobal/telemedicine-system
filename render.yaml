@@ -9,7 +9,7 @@ services:
     name: telemedicine-app
     env: python
     plan: free
-    buildCommand: "./build.sh"
+    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate"
     startCommand: "daphne core.asgi:application --port $PORT --bind 0.0.0.0"
     envVars:
       - key: DATABASE_URL
