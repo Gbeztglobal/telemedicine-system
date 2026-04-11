@@ -122,7 +122,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "type": "notify",
                     "payload": {
                         "message": f"New message from {self.user.username}",
-                        "link": f"/chat/{self.user.id}/",
+                        "link": f"/chat/room/{self.user.id}/",
                         "type": "message"
                     }
                 }
@@ -155,7 +155,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             recipient=receiver,
             actor=self.user,
             message=message,
-            link=f"/chat/{self.user.id}/"
+            link=f"/chat/room/{self.user.id}/"
         )
 
     @database_sync_to_async

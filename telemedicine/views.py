@@ -10,6 +10,9 @@ def patient_dashboard(request):
     if request.user.role != 'patient':
         return redirect('doctor_dashboard')
     
+    # Auto-clear notifications for dashboard
+    request.user.notifications.filter(is_read=False, link__icontains='patient').update(is_read=True)
+    
     diagnoses = request.user.diagnoses.all().order_by('-created_at')
     appointments = request.user.patient_appointments.all().order_by('scheduled_time')
     prescription_requests = request.user.prescription_requests.all().order_by('-created_at')
@@ -24,6 +27,9 @@ def patient_dashboard(request):
 def doctor_dashboard(request):
     if request.user.role != 'doctor':
         return redirect('patient_dashboard')
+        
+    # Auto-clear notifications for dashboard
+    request.user.notifications.filter(is_read=False, link__icontains='doctor').update(is_read=True)
         
     appointments = request.user.doctor_appointments.all().order_by('scheduled_time')
     patients = User.objects.filter(role='patient')
@@ -149,7 +155,7 @@ def confirm_appointment(request, appointment_id):
     
     # Send Notification to Patient
     msg = f"Your appointment with Dr. {request.user.last_name} has been confirmed!"
-    Notification.objects.create(recipient=appointment.patient, actor=request.user, message=msg, link="/dashboard/")
+    Notification.objects.create(recipient=appointment.patient, actor=request.user, message=msg, link="/telemedicine/patient/")
     
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
@@ -158,7 +164,7 @@ def confirm_appointment(request, appointment_id):
             "type": "notify",
             "payload": {
                 "message": msg,
-                "link": "/dashboard/",
+                "link": "/telemedicine/patient/",
                 "type": "appointment"
             }
         }

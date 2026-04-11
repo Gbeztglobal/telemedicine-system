@@ -11,6 +11,14 @@ def video_call(request, user_id):
 @login_required
 def chat_room(request, user_id):
     target_user = get_object_or_404(User, id=user_id)
+    
+    # Auto-clear notifications for this specific chat
+    # This ensures the "alert numbers" go away after viewing
+    request.user.notifications.filter(
+        is_read=False, 
+        link__icontains=f"/chat/room/{user_id}/"
+    ).update(is_read=True)
+
     # Fetch last 50 messages
     from .models import Message
     from django.db.models import Q
