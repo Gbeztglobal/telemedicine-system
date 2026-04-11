@@ -4,8 +4,15 @@
 <div class="auth-wrapper mt-5">
     <div class="card p-4">
         <h3 class="theme-header text-center">Create Account</h3>
-        <form method="POST" enctype="multipart/form-data" novalidate onsubmit="return validateForm()">
+        <form method="POST" novalidate onsubmit="return validateForm()">
             {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {{ form.non_field_errors|join:", " }}
+            </div>
+            {% endif %}
+
             {% for field in form %}
             <div class="mb-3">
                 <label class="form-label fw-bold">{{ field.label }} {% if field.field.required %}<span class="text-danger">*</span>{% endif %}</label>

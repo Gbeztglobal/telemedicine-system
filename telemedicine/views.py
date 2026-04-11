@@ -13,12 +13,10 @@ def patient_dashboard(request):
     diagnoses = request.user.diagnoses.all().order_by('-created_at')
     appointments = request.user.patient_appointments.all().order_by('scheduled_time')
     prescription_requests = request.user.prescription_requests.all().order_by('-created_at')
-    medical_reports = request.user.medical_reports.all().order_by('-created_at')
     return render(request, 'telemedicine/patient_dashboard.html', {
         'diagnoses': diagnoses,
         'appointments': appointments,
         'prescription_requests': prescription_requests,
-        'medical_reports': medical_reports
     })
 
 @login_required
