@@ -15,6 +15,11 @@ class User(AbstractUser):
     phone_number = models.CharField(max_length=15, blank=False, null=False)
 
     @property
+    def profile_picture(self):
+        # Compatibility property to prevent crashes if old cached logic looks for this
+        return type('obj', (object,), {'url': self.avatar_url})
+
+    @property
     def avatar_url(self):
         # Using DiceBear Avataaars style
         # Defensive check for gender to prevent potential attribute errors
