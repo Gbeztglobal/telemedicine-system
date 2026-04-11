@@ -100,13 +100,35 @@ def book_appointment(request):
         
         doctor = get_object_or_404(User, id=doctor_id, role='doctor')
         
-        Appointment.objects.create(
+        from chat.models import Notification
+        from channels.layers import get_channel_layer
+        from asgiref.sync import async_to_sync
+        
+        appointment = Appointment.objects.create(
             patient=request.user,
             doctor=doctor,
             scheduled_time=scheduled_time,
             notes=notes,
             status='pending'
         )
+        
+        # Notify Doctor
+        msg = f"New appointment request from {request.user.get_full_name() or request.user.username}"
+        Notification.objects.create(recipient=doctor, actor=request.user, message=msg, link="/telemedicine/doctor/")
+        
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f"notify_{doctor.id}",
+            {
+                "type": "notify",
+                "payload": {
+                    "message": msg,
+                    "link": "/telemedicine/doctor/",
+                    "type": "appointment"
+                }
+            }
+        )
+        
         return redirect('patient_dashboard')
         
     return render(request, 'telemedicine/book_appointment.html', {'doctors': doctors})
@@ -114,38 +136,35 @@ def book_appointment(request):
 @login_required
 @login_required
 def confirm_appointment(request, appointment_id):
-    try:
-        from chat.models import Notification
-        from channels.layers import get_channel_layer
-        from asgiref.sync import async_to_sync
+    from chat.models import Notification
+    from channels.layers import get_channel_layer
+    from asgiref.sync import async_to_sync
+    
+    if request.user.role != 'doctor':
+        return redirect('patient_dashboard')
         
-        if request.user.role != 'doctor':
-            return redirect('patient_dashboard')
-            
-        appointment = get_object_or_404(Appointment, id=appointment_id, doctor=request.user)
-        appointment.status = 'confirmed'
-        appointment.save()
-        
-        # Send Notification to Patient
-        msg = f"Your appointment with Dr. {request.user.last_name} has been confirmed!"
-        Notification.objects.create(recipient=appointment.patient, actor=request.user, message=msg, link="/dashboard/")
-        
-        channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            f"notify_{appointment.patient.id}",
-            {
-                "type": "notify",
-                "payload": {
-                    "message": msg,
-                    "link": "/dashboard/",
-                    "type": "appointment"
-                }
+    appointment = get_object_or_404(Appointment, id=appointment_id, doctor=request.user)
+    appointment.status = 'confirmed'
+    appointment.save()
+    
+    # Send Notification to Patient
+    msg = f"Your appointment with Dr. {request.user.last_name} has been confirmed!"
+    Notification.objects.create(recipient=appointment.patient, actor=request.user, message=msg, link="/dashboard/")
+    
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f"notify_{appointment.patient.id}",
+        {
+            "type": "notify",
+            "payload": {
+                "message": msg,
+                "link": "/dashboard/",
+                "type": "appointment"
             }
-        )
-        
-        return redirect('doctor_dashboard')
-    except Exception as e:
-        return render(request, 'telemedicine/error_debug.html', {'error': str(e), 'view': 'Confirm Appointment'})
+        }
+    )
+    
+    return redirect('doctor_dashboard')
 
 @login_required
 def patient_record_detail(request, patient_id):

@@ -111,7 +111,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
         if message:
             await self.save_message(other_user, message)
-            # Trigger real-time notification to the receiver
+            
+            # Create Persistent Notification in Database
+            await self.create_persistent_notification(other_user, f"New message from {self.user.username}")
+            
+            # Trigger real-time notification to the empty toast
             await self.channel_layer.group_send(
                 f"notify_{other_user.id}",
                 {
@@ -144,6 +148,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'sender_name': event['sender_name'],
             'sender_pic': event.get('sender_pic')
         }))
+
+    @database_sync_to_async
+    def create_persistent_notification(self, receiver, message):
+        return Notification.objects.create(
+            recipient=receiver,
+            actor=self.user,
+            message=message,
+            link=f"/chat/{self.user.id}/"
+        )
 
     @database_sync_to_async
     def get_other_user(self):
