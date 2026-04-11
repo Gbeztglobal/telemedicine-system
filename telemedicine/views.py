@@ -115,6 +115,10 @@ def book_appointment(request):
 @login_required
 def confirm_appointment(request, appointment_id):
     try:
+        from chat.models import Notification
+        from channels.layers import get_channel_layer
+        from asgiref.sync import async_to_sync
+        
         if request.user.role != 'doctor':
             return redirect('patient_dashboard')
             
@@ -125,9 +129,6 @@ def confirm_appointment(request, appointment_id):
         # Send Notification to Patient
         msg = f"Your appointment with Dr. {request.user.last_name} has been confirmed!"
         Notification.objects.create(recipient=appointment.patient, actor=request.user, message=msg, link="/dashboard/")
-        
-        from channels.layers import get_channel_layer
-        from asgiref.sync import async_to_sync
         
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
