@@ -32,9 +32,9 @@
                             <img src="{{ msg.sender.avatar_url }}" class="rounded-circle me-2 mb-1 shadow-sm border" width="30" height="30" style="object-fit:cover;">
                     {% endif %}
                     
-                    <div class="msg-bubble {% if msg.sender == request.user %}bg-main-theme text-white rounded-start-4 rounded-top-4 shadow-sm{% else %}bg-white text-dark rounded-end-4 rounded-top-4 shadow-sm border{% endif %} p-3" style="max-width: 70%;">
+                    <div class="msg-bubble {% if msg.sender == request.user %}bg-main-theme text-black fw-bold rounded-start-4 rounded-top-4 shadow-sm{% else %}bg-white text-dark rounded-end-4 rounded-top-4 shadow-sm border{% endif %} p-3" style="max-width: 70%;">
                         {% if msg.text_content %}
-                            <p class="mb-1">{{ msg.text_content }}</p>
+                            <p class="mb-1" style="font-size: 1.05rem;">{{ msg.text_content }}</p>
                         {% endif %}
                         {% if msg.voice_note %}
                             <div class="voice-audio-container mt-2">
@@ -133,9 +133,9 @@
         
         msgDiv.innerHTML = `
             ${picHtml}
-            <div class="msg-bubble ${isMe ? 'bg-main-theme text-white rounded-start-4 rounded-top-4 shadow-sm' : 'bg-white text-dark rounded-end-4 rounded-top-4 shadow-sm border'} p-3" style="max-width: 70%;">
+            <div class="msg-bubble ${isMe ? 'bg-main-theme text-black fw-bold rounded-start-4 rounded-top-4 shadow-sm' : 'bg-white text-dark rounded-end-4 rounded-top-4 shadow-sm border'} p-3" style="max-width: 70%;">
                 ${content}
-                <small class="${isMe ? 'text-white-50' : 'text-muted'} d-block text-end mt-1" style="font-size: 0.7rem;">Just now</small>
+                <small class="${isMe ? 'text-dark opacity-75' : 'text-muted'} d-block text-end mt-1" style="font-size: 0.7rem;">Just now</small>
             </div>
         `;
         

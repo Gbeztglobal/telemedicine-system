@@ -7,38 +7,32 @@ from .services.ai_diagnosis import analyze_symptoms
 
 @login_required
 def patient_dashboard(request):
-    try:
-        if request.user.role != 'patient':
-            return redirect('doctor_dashboard')
-        
-        diagnoses = request.user.diagnoses.all().order_by('-created_at')
-        appointments = request.user.patient_appointments.all().order_by('scheduled_time')
-        prescription_requests = request.user.prescription_requests.all().order_by('-created_at')
-        
-        return render(request, 'telemedicine/patient_dashboard.html', {
-            'diagnoses': diagnoses,
-            'appointments': appointments,
-            'prescription_requests': prescription_requests,
-        })
-    except Exception as e:
-        return render(request, 'telemedicine/error_debug.html', {'error': str(e), 'view': 'Patient Dashboard'})
+    if request.user.role != 'patient':
+        return redirect('doctor_dashboard')
+    
+    diagnoses = request.user.diagnoses.all().order_by('-created_at')
+    appointments = request.user.patient_appointments.all().order_by('scheduled_time')
+    prescription_requests = request.user.prescription_requests.all().order_by('-created_at')
+    
+    return render(request, 'telemedicine/patient_dashboard.html', {
+        'diagnoses': diagnoses,
+        'appointments': appointments,
+        'prescription_requests': prescription_requests,
+    })
 
 @login_required
 def doctor_dashboard(request):
-    try:
-        if request.user.role != 'doctor':
-            return redirect('patient_dashboard')
-            
-        appointments = request.user.doctor_appointments.all().order_by('scheduled_time')
-        patients = User.objects.filter(role='patient')
-        prescription_requests = PrescriptionRequest.objects.filter(status='pending').order_by('-created_at')
-        return render(request, 'telemedicine/doctor_dashboard.html', {
-            'appointments': appointments,
-            'patients': patients,
-            'prescription_requests': prescription_requests
-        })
-    except Exception as e:
-        return render(request, 'telemedicine/error_debug.html', {'error': str(e), 'view': 'Doctor Dashboard'})
+    if request.user.role != 'doctor':
+        return redirect('patient_dashboard')
+        
+    appointments = request.user.doctor_appointments.all().order_by('scheduled_time')
+    patients = User.objects.filter(role='patient')
+    prescription_requests = PrescriptionRequest.objects.filter(status='pending').order_by('-created_at')
+    return render(request, 'telemedicine/doctor_dashboard.html', {
+        'appointments': appointments,
+        'patients': patients,
+        'prescription_requests': prescription_requests
+    })
 
 @login_required
 def auto_diagnose(request):
@@ -120,31 +114,37 @@ def book_appointment(request):
 @login_required
 @login_required
 def confirm_appointment(request, appointment_id):
-    if request.user.role != 'doctor':
-        return redirect('patient_dashboard')
+    try:
+        if request.user.role != 'doctor':
+            return redirect('patient_dashboard')
+            
+        appointment = get_object_or_404(Appointment, id=appointment_id, doctor=request.user)
+        appointment.status = 'confirmed'
+        appointment.save()
         
-    appointment = get_object_or_404(Appointment, id=appointment_id, doctor=request.user)
-    appointment.status = 'confirmed'
-    appointment.save()
-    
-    # Send Notification to Patient
-    msg = f"Your appointment with Dr. {request.user.last_name} has been confirmed!"
-    Notification.objects.create(recipient=appointment.patient, actor=request.user, message=msg, link="/dashboard/")
-    
-    channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(
-        f"notify_{appointment.patient.id}",
-        {
-            "type": "notify",
-            "payload": {
-                "message": msg,
-                "link": "/dashboard/",
-                "type": "appointment"
+        # Send Notification to Patient
+        msg = f"Your appointment with Dr. {request.user.last_name} has been confirmed!"
+        Notification.objects.create(recipient=appointment.patient, actor=request.user, message=msg, link="/dashboard/")
+        
+        from channels.layers import get_channel_layer
+        from asgiref.sync import async_to_sync
+        
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f"notify_{appointment.patient.id}",
+            {
+                "type": "notify",
+                "payload": {
+                    "message": msg,
+                    "link": "/dashboard/",
+                    "type": "appointment"
+                }
             }
-        }
-    )
-    
-    return redirect('doctor_dashboard')
+        )
+        
+        return redirect('doctor_dashboard')
+    except Exception as e:
+        return render(request, 'telemedicine/error_debug.html', {'error': str(e), 'view': 'Confirm Appointment'})
 
 @login_required
 def patient_record_detail(request, patient_id):
