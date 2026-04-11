@@ -126,33 +126,43 @@
 
         notifySocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
+            console.log("Notification received:", data); // Debug for stability
             showNotification(data);
         };
 
         function showNotification(data) {
-            // Update UI
-            badge.classList.remove('d-none');
-            const count = parseInt(badge.innerText) + 1;
-            badge.innerText = count;
+            // Update UI Counters
+            if (badge) {
+                badge.classList.remove('d-none');
+                const currentCount = parseInt(badge.innerText.trim()) || 0;
+                badge.innerText = currentCount + 1;
+            }
 
-            // Add to dropdown
+            // Add the new item to the top of the notification dropdown
             const newItem = document.createElement('li');
             newItem.innerHTML = `
                 <a class="dropdown-item p-3 border-bottom d-flex align-items-center" href="${data.link || '#'}">
-                    <div class="bg-light rounded-circle p-2 me-3"><i class="bi bi-info-circle text-main"></i></div>
+                    <div class="bg-light rounded-circle p-2 me-3"><i class="bi bi-info-circle text-primary"></i></div>
                     <div>
-                        <div class="small fw-bold text-dark">${data.message}</div>
+                        <div class="small fw-bold text-dark text-wrap">${data.message}</div>
                         <div class="text-muted smaller">Just now</div>
                     </div>
                 </a>
             `;
-            if (itemsContainer.innerText.includes('No new notifications')) itemsContainer.innerHTML = '';
-            itemsContainer.prepend(newItem);
+            
+            if (itemsContainer) {
+                if (itemsContainer.innerText.includes('No new notifications')) itemsContainer.innerHTML = '';
+                itemsContainer.prepend(newItem);
+            }
 
-            // Show Toast
-            document.getElementById('toast-message').innerText = data.message;
-            document.getElementById('toast-link').href = data.link || '#';
-            toast.show();
+            // Trigger the Real-Time Toast (Pop-up)
+            const toastEl = document.getElementById('liveToast');
+            if (toastEl) {
+                document.getElementById('toast-message').innerText = data.message;
+                document.getElementById('toast-link').href = data.link || '#';
+                const liveToast = new bootstrap.Toast(toastEl);
+                liveToast.show();
+            }
         }
 
         function clearAllNotifications() {
