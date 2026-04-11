@@ -17,9 +17,11 @@ class User(AbstractUser):
     @property
     def avatar_url(self):
         # Using DiceBear Avataaars style
-        # Male/Female seeds to help with style, username for uniqueness
+        # Defensive check for gender to prevent potential attribute errors
+        gender_seed = getattr(self, 'gender', 'male') or 'male'
+        username_seed = getattr(self, 'username', 'guest')
         style = "avataaars"
-        seed = f"{self.gender}_{self.username}"
+        seed = f"{gender_seed}_{username_seed}"
         return f"https://api.dicebear.com/7.x/{style}/svg?seed={seed}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf"
 
     def __str__(self):

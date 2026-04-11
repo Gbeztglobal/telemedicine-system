@@ -3,16 +3,13 @@ from django.contrib.auth.forms import UserCreationForm
 from .models import User
 
 class CustomUserCreationForm(UserCreationForm):
-    first_name = forms.CharField(max_length=30, required=True, label="First Name")
-    last_name = forms.CharField(max_length=30, required=True, label="Last Name")
-    email = forms.EmailField(required=True, label="Email Address")
     role = forms.ChoiceField(choices=User.ROLE_CHOICES, required=True, label="Select Role")
-    phone_number = forms.CharField(max_length=15, required=True, label="Phone Number")
     gender = forms.ChoiceField(choices=User.GENDER_CHOICES, required=True, label="Gender")
+    phone_number = forms.CharField(max_length=15, required=True, label="Phone Number")
 
     class Meta(UserCreationForm.Meta):
         model = User
-        fields = ('username', 'first_name', 'last_name', 'email', 'phone_number', 'role', 'gender')
+        fields = UserCreationForm.Meta.fields + ('first_name', 'last_name', 'email', 'phone_number', 'role', 'gender')
 
     def clean_phone_number(self):
         phone = self.cleaned_data.get('phone_number')
