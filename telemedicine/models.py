@@ -63,3 +63,13 @@ class PrescriptionRequest(models.Model):
     
     def __str__(self):
         return f"Prescription Request by {self.patient.username} - {self.status}"
+
+class MedicalReport(models.Model):
+    patient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='medical_reports')
+    title = models.CharField(max_length=200)
+    file = models.FileField(upload_to='reports/')
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.title} - {self.patient.username}"

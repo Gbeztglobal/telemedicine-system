@@ -8,4 +8,6 @@ urlpatterns = [
     path('login/', auth_views.LoginView.as_view(template_name='accounts/login.html'), name='login'),
     path('logout/', views.custom_logout, name='logout'),
     path('dashboard/', views.dashboard_redirect, name='dashboard'),
+    path('profile/', views.profile, name='profile'),
+    path('notifications/read/', views.mark_notifications_read, name='mark_notifications_read'),
 ]

@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-lg-6">
+        <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+            <div class="card-header bg-success text-white p-4 text-center">
+                <div class="mb-2"><i class="bi bi-check-circle-fill fs-1"></i></div>
+                <h3 class="mb-0 fw-bold">Complete Consultation</h3>
+                <p class="mb-0 text-white-50">Finalize the session with patient {{ appointment.patient.first_name }}</p>
+            </div>
+            <div class="card-body p-5">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label for="summary" class="form-label fw-bold text-dark">Consultation Summary & Advice</label>
+                        <textarea class="form-control form-control-lg shadow-sm" id="summary" name="summary" rows="6" placeholder="Write your professional summary, advice, or next steps here..." required></textarea>
+                        <div class="form-text mt-2">This summary will be added to the patient's permanent medical record.</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-main btn-lg fw-bold py-3 shadow">
+                            <i class="bi bi-journal-check me-2"></i> Save & Complete Session
+                        </button>
+                        <a href="{% url 'doctor_dashboard' %}" class="btn btn-link text-muted">Go Back to Dashboard</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

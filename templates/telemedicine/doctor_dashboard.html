@@ -75,10 +75,49 @@
                 {% endfor %}
             </div>
         {% else %}
-            <div class="card p-5 text-center mb-5 bg-transparent border-2 border-dashed border-secondary shadow-none">
-                <i class="bi bi-check-circle text-success mb-3" style="font-size: 3rem;"></i>
-                <h5 class="text-muted">All Caught Up!</h5>
-                <p class="text-muted mb-0">There are no pending prescription requests.</p>
+            </div>
+        {% endif %}
+
+        <!-- Pending Appointments -->
+        <h4 class="theme-header mt-5 d-flex align-items-center">
+            <span class="dashboard-stat-icon me-3"><i class="bi bi-calendar-event-fill"></i></span>
+            Pending Appointments
+        </h4>
+        
+        {% if appointments %}
+            <div class="row g-3 mb-5">
+                {% for appt in appointments %}
+                {% if appt.status == 'pending' %}
+                <div class="col-md-6">
+                    <div class="card p-3 border-0 shadow-sm rounded-4 h-100 border-start border-4 border-warning">
+                        <div class="d-flex align-items-center mb-3">
+                            {% if appt.patient.profile_picture %}
+                                <img src="{{ appt.patient.profile_picture.url }}" class="rounded-circle me-2 shadow-sm" width="40" height="40" style="object-fit:cover;">
+                            {% else %}
+                                <div class="bg-secondary rounded-circle me-2 d-flex align-items-center justify-content-center text-white" style="width:40px; height:40px;"><i class="bi bi-person"></i></div>
+                            {% endif %}
+                            <div>
+                                <h6 class="mb-0 fw-bold small">{{ appt.patient.first_name }} {{ appt.patient.last_name }}</h6>
+                                <small class="text-muted">{{ appt.scheduled_time|date:"M d @ H:i" }}</small>
+                            </div>
+                        </div>
+                        <p class="small text-secondary mb-3">"{{ appt.notes|default:"No notes."|truncatechars:100 }}"</p>
+                        <div class="d-grid">
+                            <form action="{% url 'confirm_appointment' appt.id %}" method="POST">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-success w-100 rounded-pill fw-bold">
+                                    <i class="bi bi-check-lg me-1"></i> Confirm Appointment
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="card p-4 text-center mb-5 bg-transparent border-2 border-dashed border-secondary shadow-none">
+                <p class="text-muted mb-0 small">No pending appointments.</p>
             </div>
         {% endif %}
 
@@ -118,9 +157,14 @@
                                 <i class="bi bi-telephone-fill me-2 text-muted"></i>{{ patient.phone_number }}
                             </td>
                             <td class="px-4 py-3 text-end">
-                                <a href="{% url 'video_call' patient.id %}" class="btn btn-sm btn-main rounded-pill px-3 shadow-sm">
-                                    <i class="bi bi-camera-video-fill me-1"></i> Start Call
-                                </a>
+                                <div class="btn-group">
+                                    <a href="{% url 'patient_record_detail' patient.id %}" class="btn btn-sm btn-outline-main rounded-pill me-2 px-3">
+                                        <i class="bi bi-file-earmark-person me-1"></i> Record
+                                    </a>
+                                    <a href="{% url 'chat_room' patient.id %}" class="btn btn-sm btn-main rounded-pill px-3 shadow-sm">
+                                        <i class="bi bi-chat-dots-fill me-1"></i> Chat
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}

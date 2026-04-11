@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from .forms import CustomUserCreationForm
+from django.contrib import messages
+from .forms import CustomUserCreationForm, ProfileUpdateForm
 
 def register(request):
     if request.user.is_authenticated:
@@ -19,6 +20,19 @@ def register(request):
     return render(request, 'accounts/register.html', {'form': form})
 
 @login_required
+def profile(request):
+    if request.method == 'POST':
+        form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your profile has been updated successfully!')
+            return redirect('profile')
+    else:
+        form = ProfileUpdateForm(instance=request.user)
+    
+    return render(request, 'accounts/profile.html', {'form': form})
+
+@login_required
 def dashboard_redirect(request):
     if request.user.role == 'doctor':
         return redirect('doctor_dashboard')
@@ -27,3 +41,8 @@ def dashboard_redirect(request):
 def custom_logout(request):
     logout(request)
     return redirect('login')
+
+@login_required
+def mark_notifications_read(request):
+    request.user.notifications.filter(is_read=False).update(is_read=True)
+    return redirect(request.META.get('HTTP_REFERER', 'dashboard'))

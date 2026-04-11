@@ -65,6 +65,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'chat.context_processors.notifications',
             ],
         },
     },
@@ -81,12 +82,22 @@ DATABASES = {
     )
 }
 
-# Channel layer configuration for WebRTC signaling
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
+# Channel layer configuration
+if 'REDIS_URL' in os.environ:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [os.environ.get('REDIS_URL')],
+            },
+        },
     }
-}
+else:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer"
+        }
+    }
 
 # Custom User Model
 AUTH_USER_MODEL = 'accounts.User'

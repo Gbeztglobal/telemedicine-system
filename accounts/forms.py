@@ -21,3 +21,16 @@ class CustomUserCreationForm(UserCreationForm):
         if len(phone) < 10 or len(phone) > 15:
             raise forms.ValidationError("Phone number must be between 10 and 15 digits.")
         return phone
+
+class ProfileUpdateForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'email', 'phone_number', 'profile_picture')
+        
+    def clean_phone_number(self):
+        phone = self.cleaned_data.get('phone_number')
+        if not phone.isdigit():
+            raise forms.ValidationError("Phone number must contain only numbers.")
+        if len(phone) < 10 or len(phone) > 15:
+            raise forms.ValidationError("Phone number must be between 10 and 15 digits.")
+        return phone

@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center mt-3">
+    <div class="col-lg-10">
+        <div class="card shadow-lg border-0 rounded-4 overflow-hidden" style="height: 85vh;">
+            <!-- Chat Header -->
+            <div class="card-header bg-white border-bottom p-3 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <a href="javascript:history.back()" class="btn btn-sm btn-light border rounded-circle me-3"><i class="bi bi-chevron-left"></i></a>
+                    <div class="position-relative">
+                        {% if target_user.profile_picture %}
+                            <img src="{{ target_user.profile_picture.url }}" class="rounded-circle shadow-sm border" width="50" height="50" style="object-fit:cover;">
+                        {% else %}
+                            <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center text-white" style="width:50px; height:50px;"><i class="bi bi-person"></i></div>
+                        {% endif %}
+                        <span class="position-absolute bottom-0 end-0 bg-success border border-white rounded-circle p-1" title="Online"></span>
+                    </div>
+                    <div class="ms-3">
+                        <h6 class="mb-0 fw-bold">{{ target_user.first_name }} {{ target_user.last_name }}</h6>
+                        <small class="text-muted"><i class="bi bi-shield-check text-main-theme"></i> {{ target_user.get_role_display }}</small>
+                    </div>
+                </div>
+                <div>
+                    <a href="{% url 'video_call' target_user.id %}" class="btn btn-accent rounded-pill px-4 fw-bold shadow-sm">
+                        <i class="bi bi-camera-video-fill me-2"></i> Video Call
+                    </a>
+                </div>
+            </div>
+
+            <!-- Chat Messages Area -->
+            <div class="card-body p-4 overflow-auto bg-light" id="chat-messages" style="flex-grow: 1;">
+                {% for msg in chat_messages %}
+                <div class="d-flex mb-4 {% if msg.sender == request.user %}justify-content-end{% endif %} align-items-end">
+                    {% if msg.sender != request.user %}
+                        {% if msg.sender.profile_picture %}
+                            <img src="{{ msg.sender.profile_picture.url }}" class="rounded-circle me-2 mb-1 shadow-sm border" width="30" height="30" style="object-fit:cover;">
+                        {% else %}
+                            <div class="bg-secondary rounded-circle me-2 mb-1 d-flex align-items-center justify-content-center text-white" style="width:30px; height:30px; font-size: 0.7rem;"><i class="bi bi-person"></i></div>
+                        {% endif %}
+                    {% endif %}
+                    
+                    <div class="msg-bubble {% if msg.sender == request.user %}bg-main-theme text-white rounded-start-4 rounded-top-4 shadow-sm{% else %}bg-white text-dark rounded-end-4 rounded-top-4 shadow-sm border{% endif %} p-3" style="max-width: 70%;">
+                        {% if msg.text_content %}
+                            <p class="mb-1">{{ msg.text_content }}</p>
+                        {% endif %}
+                        {% if msg.voice_note %}
+                            <div class="voice-audio-container mt-2">
+                                <audio controls class="w-100" style="height: 30px;">
+                                    <source src="{{ msg.voice_note.url }}" type="audio/mpeg">
+                                </audio>
+                            </div>
+                        {% endif %}
+                        <small class="{% if msg.sender == request.user %}text-white-50{% else %}text-muted{% endif %} d-block text-end mt-1" style="font-size: 0.7rem;">
+                            {{ msg.timestamp|date:"H:i" }}
+                        </small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Chat Input Area -->
+            <div class="card-footer bg-white border-top p-3">
+                <div class="input-group input-group-lg shadow-sm border rounded-pill overflow-hidden bg-light px-2 py-1">
+                    <button class="btn border-0 text-muted" type="button" id="voice-record-btn" title="Record Voice Note">
+                        <i class="bi bi-mic-fill fs-4" id="mic-icon"></i>
+                    </button>
+                    <input type="text" id="chat-input" class="form-control border-0 bg-light" placeholder="Type your message..." aria-label="Chat input">
+                    <button class="btn btn-main rounded-circle ms-2 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;" type="button" id="chat-send-btn">
+                        <i class="bi bi-send-fill text-white"></i>
+                    </button>
+                </div>
+                <div id="recording-status" class="text-center small text-danger mt-2 fw-bold" style="display: none;">
+                    <span class="recording-dot me-2"></span> Recording... <span id="record-time">0:00</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .msg-bubble {
+        animation: fadeIn 0.3s ease-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    #chat-messages::-webkit-scrollbar {
+        width: 6px;
+    }
+    #chat-messages::-webkit-scrollbar-thumb {
+        background-color: rgba(0,0,0,0.1);
+        border-radius: 10px;
+    }
+    .recording-dot {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        background-color: red;
+        border-radius: 50%;
+        animation: blink 1s infinite;
+    }
+    @keyframes blink {
+        0% { opacity: 1; }
+        50% { opacity: 0.3; }
+        100% { opacity: 1; }
+    }
+</style>
+
+<script>
+    const targetUserId = "{{ target_user.id }}";
+    const currentUserId = "{{ request.user.id }}";
+    const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+    const chatSocket = new WebSocket(`${wsScheme}://${window.location.host}/ws/chat/${targetUserId}/`);
+
+    const msgContainer = document.getElementById('chat-messages');
+    msgContainer.scrollTop = msgContainer.scrollHeight;
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const isMe = data.sender_id == currentUserId;
+        
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `d-flex mb-4 ${isMe ? 'justify-content-end' : ''} align-items-end`;
+        
+        let content = '';
+        if (data.message) content += `<p class="mb-1">${data.message}</p>`;
+        if (data.voice_url) {
+            content += `<div class="voice-audio-container mt-2"><audio controls class="w-100" style="height: 30px;"><source src="${data.voice_url}" type="audio/mpeg"></audio></div>`;
+        }
+
+        let picHtml = '';
+        if (!isMe) {
+            if (data.sender_pic) {
+                picHtml = `<img src="${data.sender_pic}" class="rounded-circle me-2 mb-1 shadow-sm border" width="30" height="30" style="object-fit:cover;">`;
+            } else {
+                picHtml = `<div class="bg-secondary rounded-circle me-2 mb-1 d-flex align-items-center justify-content-center text-white" style="width:30px; height:30px; font-size: 0.7rem;"><i class="bi bi-person"></i></div>`;
+            }
+        }
+        
+        msgDiv.innerHTML = `
+            ${picHtml}
+            <div class="msg-bubble ${isMe ? 'bg-main-theme text-white rounded-start-4 rounded-top-4 shadow-sm' : 'bg-white text-dark rounded-end-4 rounded-top-4 shadow-sm border'} p-3" style="max-width: 70%;">
+                ${content}
+                <small class="${isMe ? 'text-white-50' : 'text-muted'} d-block text-end mt-1" style="font-size: 0.7rem;">Just now</small>
+            </div>
+        `;
+        
+        msgContainer.appendChild(msgDiv);
+        msgContainer.scrollTop = msgContainer.scrollHeight;
+    };
+
+    function sendMessage() {
+        const input = document.getElementById('chat-input');
+        const message = input.value.trim();
+        if (message) {
+            chatSocket.send(JSON.stringify({
+                'message': message,
+                'voice_url': null
+            }));
+            input.value = '';
+        }
+    }
+
+    document.getElementById('chat-send-btn').onclick = sendMessage;
+    document.getElementById('chat-input').onkeypress = function(e) {
+        if (e.key === 'Enter') sendMessage();
+    };
+
+    // Voice Recording Logic
+    let mediaRecorder;
+    let audioChunks = [];
+    const recordBtn = document.getElementById('voice-record-btn');
+    const micIcon = document.getElementById('mic-icon');
+    const statusDiv = document.getElementById('recording-status');
+    const timeSpan = document.getElementById('record-time');
+    let startTime;
+    let timerInterval;
+
+    recordBtn.onclick = async () => {
+        if (!mediaRecorder || mediaRecorder.state === "inactive") {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/mpeg' });
+                    const formData = new FormData();
+                    formData.append('voice_note', audioBlob, 'voice_note.mp3');
+                    formData.append('receiver_id', targetUserId);
+                    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+                    const response = await fetch('{% url "voice_note_upload" %}', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await response.json();
+                    if (result.status === 'success') {
+                        chatSocket.send(JSON.stringify({
+                            'message': null,
+                            'voice_url': result.url
+                        }));
+                    }
+                    
+                    statusDiv.style.display = 'none';
+                    micIcon.className = 'bi bi-mic-fill fs-4';
+                    recordBtn.classList.remove('text-danger');
+                    clearInterval(timerInterval);
+                };
+
+                mediaRecorder.start();
+                micIcon.className = 'bi bi-stop-circle-fill fs-4';
+                recordBtn.classList.add('text-danger');
+                statusDiv.style.display = 'block';
+                startTime = Date.now();
+                timerInterval = setInterval(() => {
+                    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                    const mins = Math.floor(elapsed / 60);
+                    const secs = elapsed % 60;
+                    timeSpan.innerText = `${mins}:${secs.toString().padStart(2, '0')}`;
+                }, 1000);
+
+            } catch (err) {
+                alert("Could not access microphone: " + err);
+            }
+        } else {
+            mediaRecorder.stop();
+        }
+    };
+</script>
+{% endblock %}

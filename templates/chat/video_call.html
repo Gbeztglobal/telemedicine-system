@@ -1,135 +1,182 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row mt-3">
-    <div class="col-md-12 text-center">
-        <h4 class="mb-3">Video Call with {{ target_user.first_name }} {{ target_user.last_name }}</h4>
-        
-        <div class="video-container shadow-lg">
-            <video id="remoteVideo" autoplay playsinline></video>
-            <video id="localVideo" autoplay playsinline muted></video>
+<div class="container-fluid h-100 mt-2">
+    <div class="row h-100">
+        <!-- Main Call Area -->
+        <div class="col-lg-9 h-100">
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden position-relative bg-dark" style="height: 85vh;">
+                <!-- Remote Video (Full Screen) -->
+                <video id="remoteVideo" autoplay playsinline class="w-100 h-100" style="object-fit: cover; background: #1a1a1a;"></video>
+                
+                <!-- Local Video (Picture-in-Picture) -->
+                <div class="position-absolute bottom-0 end-0 m-4 shadow-lg border border-3 border-white rounded-4 overflow-hidden" style="width: 240px; height: 160px; z-index: 10;">
+                    <video id="localVideo" autoplay muted playsinline class="w-100 h-100" style="object-fit: cover; background: #333; transform: scaleX(-1);"></video>
+                </div>
+
+                <!-- Call Controls Overlay -->
+                <div class="position-absolute bottom-0 start-50 translate-middle-x mb-4 d-flex gap-3 px-4 py-2 bg-dark bg-opacity-50 rounded-pill backdrop-blur" style="z-index: 20;">
+                    <button id="toggleMic" class="btn btn-light rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 55px; height: 55px;">
+                        <i class="bi bi-mic-fill fs-4"></i>
+                    </button>
+                    <button id="toggleCamera" class="btn btn-light rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 55px; height: 55px;">
+                        <i class="bi bi-camera-video-fill fs-4"></i>
+                    </button>
+                    <button id="hangUp" class="btn btn-danger rounded-circle p-3 d-flex align-items-center justify-content-center shadow-lg" style="width: 60px; height: 60px;">
+                        <i class="bi bi-telephone-x-fill fs-3"></i>
+                    </button>
+                </div>
+
+                <!-- Status Overlay -->
+                <div id="callStatus" class="position-absolute top-0 start-50 translate-middle-x mt-4 badge bg-dark bg-opacity-75 px-4 py-2 rounded-pill fw-normal" style="z-index: 20;">
+                    <i class="bi bi-shield-check text-success me-2"></i> Connecting to Dr. {{ target_user.last_name }}...
+                </div>
+            </div>
         </div>
-        
-        <div class="call-controls mt-3">
-            <button id="startCallBtn" class="btn btn-success btn-lg rounded-circle" style="width:60px; height:60px;"><i class="bi bi-telephone-fill"></i></button>
-            <button id="endCallBtn" class="btn btn-danger btn-lg rounded-circle d-none" style="width:60px; height:60px;"><i class="bi bi-telephone-x-fill"></i></button>
-            <button id="muteBtn" class="btn btn-secondary btn-lg rounded-circle" style="width:60px; height:60px;"><i class="bi bi-mic-fill"></i></button>
+
+        <!-- Call Sidebar -->
+        <div class="col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center mb-4">
+                <div class="mb-3">
+                    {% if target_user.profile_picture %}
+                        <img src="{{ target_user.profile_picture.url }}" class="rounded-circle shadow border border-3 border-main-theme" width="100" height="100" style="object-fit:cover;">
+                    {% else %}
+                        <div class="bg-secondary rounded-circle mx-auto d-flex align-items-center justify-content-center text-white" style="width:100px; height:100px;"><i class="bi bi-person fs-1"></i></div>
+                    {% endif %}
+                </div>
+                <h5 class="fw-bold mb-1">{{ target_user.first_name }} {{ target_user.last_name }}</h5>
+                <p class="text-muted small mb-0">{{ target_user.get_role_display }}</p>
+                <hr class="my-4 opacity-10">
+                <div class="alert alert-info border-0 rounded-4 small py-3">
+                    <i class="bi bi-info-circle-fill me-2"></i> <strong>Tip:</strong> Ensure your camera and microphone are permitted in your browser settings.
+                </div>
+            </div>
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block scripts %}
-<!-- WebRTC Logic -->
-{{ target_user.id|json_script:"target-user-id" }}
+<style>
+    .backdrop-blur {
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+    video {
+        border-radius: inherit;
+    }
+</style>
+
 <script>
-    const targetUserId = JSON.parse(document.getElementById('target-user-id').textContent);
-    const localVideo = document.getElementById('localVideo');
-    const remoteVideo = document.getElementById('remoteVideo');
-    const startCallBtn = document.getElementById('startCallBtn');
-    const endCallBtn = document.getElementById('endCallBtn');
-    
+    const targetUserId = "{{ target_user.id }}";
+    const currentUserId = "{{ request.user.id }}";
+    const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+    const callSocket = new WebSocket(`${wsScheme}://${window.location.host}/ws/call/`);
+
     let localStream;
     let peerConnection;
-    const servers = {
-        iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+    const config = {
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
     };
 
-    // WebSocket Signaling setup
-    const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
-    const chatSocket = new WebSocket(
-        wsScheme + '://' + window.location.host + '/ws/call/'
-    );
+    const localVideo = document.getElementById('localVideo');
+    const remoteVideo = document.getElementById('remoteVideo');
+    const callStatus = document.getElementById('callStatus');
 
-    chatSocket.onmessage = function(e) {
-        const data = JSON.parse(e.data);
-        const action = data.action;
-        
-        if(action === 'offer') {
-            handleOffer(data.payload, data.caller_id);
-        } else if (action === 'answer') {
-            handleAnswer(data.payload);
-        } else if (action === 'ice-candidate') {
-            handleIceCandidate(data.payload);
+    async function init() {
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            localVideo.srcObject = localStream;
+            
+            // Auto-start negotiation if we are the caller (for demo simplicity)
+            // In a better flow, we'd wait for both to be "ready"
+            createPeerConnection();
+            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+            
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+            
+            callSocket.send(JSON.stringify({
+                'action': 'offer',
+                'target_id': targetUserId,
+                'payload': offer
+            }));
+            
+            callStatus.innerHTML = '<span class="text-warning"><i class="bi bi-activity me-2"></i> Waiting for answer...</span>';
+        } catch (err) {
+            console.error("Camera access error:", err);
+            callStatus.innerHTML = '<span class="text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i> Camera Access Denied</span>';
         }
-    };
+    }
 
-    startCallBtn.onclick = async () => {
-        startCallBtn.classList.add('d-none');
-        endCallBtn.classList.remove('d-none');
+    function createPeerConnection() {
+        peerConnection = new RTCPeerConnection(config);
         
-        localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
-        localVideo.srcObject = localStream;
-        
-        peerConnection = new RTCPeerConnection(servers);
-        localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-        
-        peerConnection.ontrack = (event) => {
-            remoteVideo.srcObject = event.streams[0];
-        };
-        
-        peerConnection.onicecandidate = (event) => {
+        peerConnection.onicecandidate = event => {
             if (event.candidate) {
-                sendSignal('ice-candidate', event.candidate);
+                callSocket.send(JSON.stringify({
+                    'action': 'candidate',
+                    'target_id': targetUserId,
+                    'payload': event.candidate
+                }));
             }
         };
 
-        const offer = await peerConnection.createOffer();
-        await peerConnection.setLocalDescription(offer);
-        sendSignal('offer', offer);
+        peerConnection.ontrack = event => {
+            remoteVideo.srcObject = event.streams[0];
+            callStatus.innerHTML = '<span class="text-success"><i class="bi bi-check-circle-fill me-2"></i> Connected Room</span>';
+        };
+
+        peerConnection.onconnectionstatechange = () => {
+            if (peerConnection.connectionState === 'connected') {
+                callStatus.innerHTML = '<span class="text-success"><i class="bi bi-broadcast me-2"></i> Encrypted Session Active</span>';
+            }
+        };
+    }
+
+    callSocket.onmessage = async (e) => {
+        const data = JSON.parse(e.data);
+        const action = data.action;
+        const payload = data.payload;
+
+        if (action === 'offer') {
+            if (!peerConnection) createPeerConnection();
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(payload));
+            
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+            
+            callSocket.send(JSON.stringify({
+                'action': 'answer',
+                'target_id': targetUserId,
+                'payload': answer
+            }));
+        } else if (action === 'answer') {
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(payload));
+        } else if (action === 'candidate') {
+            if (peerConnection) {
+                await peerConnection.addIceCandidate(new RTCIceCandidate(payload));
+            }
+        }
     };
 
-    async function handleOffer(offer, callerId) {
-        if (!peerConnection) {
-            startCallBtn.classList.add('d-none');
-            endCallBtn.classList.remove('d-none');
-            
-            localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
-            localVideo.srcObject = localStream;
-            
-            peerConnection = new RTCPeerConnection(servers);
-            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-            
-            peerConnection.ontrack = (event) => {
-                remoteVideo.srcObject = event.streams[0];
-            };
-            
-            peerConnection.onicecandidate = (event) => {
-                if (event.candidate) {
-                    sendSignal('ice-candidate', event.candidate, callerId);
-                }
-            };
-        }
-        await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
-        const answer = await peerConnection.createAnswer();
-        await peerConnection.setLocalDescription(answer);
-        sendSignal('answer', answer, callerId);
-    }
-
-    async function handleAnswer(answer) {
-        if (!peerConnection.currentRemoteDescription) {
-            await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
-        }
-    }
-
-    async function handleIceCandidate(candidate) {
-        if (peerConnection) {
-            await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-        }
-    }
-
-    function sendSignal(action, payload, specificTarget = null) {
-        chatSocket.send(JSON.stringify({
-            'action': action,
-            'target_id': specificTarget || targetUserId,
-            'payload': payload
-        }));
-    }
-
-    endCallBtn.onclick = () => {
-        if(peerConnection) peerConnection.close();
-        if(localStream) localStream.getTracks().forEach(track => track.stop());
-        window.location.href = "{% url 'dashboard' %}";
+    // Controls
+    document.getElementById('toggleMic').onclick = () => {
+        const audioTrack = localStream.getAudioTracks()[0];
+        audioTrack.enabled = !audioTrack.enabled;
+        document.getElementById('toggleMic').classList.toggle('btn-danger');
+        document.getElementById('toggleMic').classList.toggle('btn-light');
     };
+
+    document.getElementById('toggleCamera').onclick = () => {
+        const videoTrack = localStream.getVideoTracks()[0];
+        videoTrack.enabled = !videoTrack.enabled;
+        document.getElementById('toggleCamera').classList.toggle('btn-danger');
+        document.getElementById('toggleCamera').classList.toggle('btn-light');
+    };
+
+    document.getElementById('hangUp').onclick = () => {
+        window.history.back();
+    };
+
+    init();
 </script>
 {% endblock %}
