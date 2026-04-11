@@ -25,7 +25,7 @@ class CustomUserCreationForm(UserCreationForm):
 class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'email', 'phone_number', 'profile_picture')
+        fields = ('first_name', 'last_name', 'email', 'phone_number', 'gender')
         
     def clean_phone_number(self):
         phone = self.cleaned_data.get('phone_number')
