@@ -14,6 +14,14 @@ def patient_dashboard(request):
     request.user.notifications.filter(is_read=False, link__icontains='patient').update(is_read=True)
     
     diagnoses = request.user.diagnoses.all().order_by('-created_at')
+    
+    # Check for recent critical risks (last 72 hours)
+    from django.utils import timezone
+    from datetime import timedelta
+    three_days_ago = timezone.now() - timedelta(days=3)
+    critical_diagnosis = diagnoses.filter(created_at__gte=three_days_ago, malaria_risk='High') | diagnoses.filter(created_at__gte=three_days_ago, cholera_risk='High')
+    has_critical_risk = critical_diagnosis.exists()
+
     appointments = request.user.patient_appointments.all().order_by('scheduled_time')
     prescription_requests = request.user.prescription_requests.all().order_by('-created_at')
     
@@ -21,6 +29,7 @@ def patient_dashboard(request):
         'diagnoses': diagnoses,
         'appointments': appointments,
         'prescription_requests': prescription_requests,
+        'has_critical_risk': has_critical_risk,
     })
 
 @login_required
@@ -33,10 +42,21 @@ def doctor_dashboard(request):
         
     appointments = request.user.doctor_appointments.all().order_by('scheduled_time')
     patients = User.objects.filter(role='patient')
+    
+    urgent_patients = []
+    # Pre-calculate high-risk status for directory triage
+    for patient in patients:
+        latest = patient.diagnoses.order_by('-created_at').first()
+        patient.latest_diagnosis = latest
+        patient.is_high_risk = latest and (latest.malaria_risk == 'High' or latest.cholera_risk == 'High')
+        if patient.is_high_risk:
+            urgent_patients.append(patient)
+
     prescription_requests = PrescriptionRequest.objects.filter(status='pending').order_by('-created_at')
     return render(request, 'telemedicine/doctor_dashboard.html', {
         'appointments': appointments,
         'patients': patients,
+        'urgent_patients': urgent_patients,
         'prescription_requests': prescription_requests
     })
 
@@ -222,4 +242,9 @@ def complete_appointment(request, appointment_id):
         
     return render(request, 'telemedicine/complete_appointment.html', {'appointment': appointment})
 
-    return render(request, 'telemedicine/complete_appointment.html', {'appointment': appointment})
+@login_required
+def doctor_directory(request):
+    if request.user.role != 'patient':
+        return redirect('doctor_dashboard')
+    doctors = User.objects.filter(role='doctor')
+    return render(request, 'telemedicine/doctor_directory.html', {'doctors': doctors})

@@ -6,7 +6,14 @@ from accounts.models import User
 @login_required
 def video_call(request, user_id):
     target_user = get_object_or_404(User, id=user_id)
-    return render(request, 'chat/video_call.html', {'target_user': target_user})
+    context = {'target_user': target_user}
+    
+    # If the doctor is calling, provide the patient's clinical HUD data
+    if request.user.role == 'doctor' and target_user.role == 'patient':
+        context['patient_diagnoses'] = target_user.diagnoses.all().order_by('-created_at')[:5]
+        context['patient_prescriptions'] = target_user.prescription_requests.all().order_by('-created_at')[:5]
+        
+    return render(request, 'chat/video_call.html', context)
 
 @login_required
 def chat_room(request, user_id):

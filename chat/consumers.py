@@ -104,50 +104,74 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         data = json.loads(text_data)
-        message = data.get('message')
+        action = data.get('action', 'send_message')
+        message_id = data.get('message_id')
+        message_text = data.get('message')
         voice_url = data.get('voice_url')
+        parent_id = data.get('parent_id')
         
         other_user = await self.get_other_user()
         
-        if message:
-            await self.save_message(other_user, message)
+        if action == 'send_message' and (message_text or voice_url):
+            new_msg = await self.save_message(other_user, message_text, voice_url, parent_id)
             
-            # Create Persistent Notification in Database
+            # Quoted Context for Broadcast (if reply)
+            parent_text = await self.get_parent_text(parent_id) if parent_id else None
+            
+            # Notification only for new messages
             await self.create_persistent_notification(other_user, f"New message from {self.user.username}")
             
-            # Trigger real-time notification to the empty toast
             await self.channel_layer.group_send(
-                f"notify_{other_user.id}",
+                self.room_group_name,
                 {
-                    "type": "notify",
-                    "payload": {
-                        "message": f"New message from {self.user.username}",
-                        "link": f"/chat/room/{self.user.id}/",
-                        "type": "message"
-                    }
+                    'type': 'chat_message',
+                    'action': 'new',
+                    'message_id': new_msg.id,
+                    'message': message_text,
+                    'voice_url': voice_url,
+                    'parent_id': parent_id,
+                    'parent_text': parent_text,
+                    'sender_id': self.user.id,
+                    'sender_name': self.user.username,
+                    'sender_pic': self.user.avatar_url,
+                    'timestamp': new_msg.timestamp.strftime('%H:%M')
                 }
             )
-        
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                'type': 'chat_message',
-                'message': message,
-                'voice_url': voice_url,
-                'sender_id': self.user.id,
-                'sender_name': self.user.username,
-                'sender_pic': self.user.avatar_url
-            }
-        )
+
+        elif action == 'edit_message' and message_id and message_text:
+            success = await self.update_message(message_id, message_text)
+            if success:
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        'type': 'chat_message',
+                        'action': 'edit',
+                        'message_id': message_id,
+                        'message': message_text
+                    }
+                )
+
+        elif action == 'delete_message' and message_id:
+            success = await self.delete_message(message_id)
+            if success:
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        'type': 'chat_message',
+                        'action': 'delete',
+                        'message_id': message_id
+                    }
+                )
 
     async def chat_message(self, event):
-        await self.send(text_data=json.dumps({
-            'message': event['message'],
-            'voice_url': event['voice_url'],
-            'sender_id': event['sender_id'],
-            'sender_name': event['sender_name'],
-            'sender_pic': event.get('sender_pic')
-        }))
+        await self.send(text_data=json.dumps(event))
+
+    @database_sync_to_async
+    def get_parent_text(self, parent_id):
+        try:
+            return Message.objects.get(id=parent_id).text_content
+        except:
+            return None
 
     @database_sync_to_async
     def create_persistent_notification(self, receiver, message):
@@ -163,9 +187,39 @@ class ChatConsumer(AsyncWebsocketConsumer):
         return User.objects.get(id=self.other_user_id)
 
     @database_sync_to_async
-    def save_message(self, receiver, content):
+    def save_message(self, receiver, content, voice_url=None, parent_id=None):
+        parent = Message.objects.get(id=parent_id) if parent_id else None
         return Message.objects.create(
             sender=self.user,
             receiver=receiver,
-            text_content=content
+            text_content=content,
+            voice_note=voice_url, # Note: this assumes url is already stored if coming from another source, but usually voice is a file field.
+            parent_message=parent
         )
+
+    @database_sync_to_async
+    def update_message(self, message_id, new_content):
+        from django.utils import timezone
+        try:
+            msg = Message.objects.get(id=message_id, sender=self.user)
+            # 50 second check
+            if (timezone.now() - msg.timestamp).total_seconds() <= 50:
+                msg.text_content = new_content
+                msg.is_edited = True
+                msg.save()
+                return True
+        except Message.DoesNotExist:
+            pass
+        return False
+
+    @database_sync_to_async
+    def delete_message(self, message_id):
+        try:
+            msg = Message.objects.get(id=message_id, sender=self.user)
+            msg.is_deleted = True
+            msg.text_content = "This message was deleted"
+            msg.save()
+            return True
+        except Message.DoesNotExist:
+            pass
+        return False

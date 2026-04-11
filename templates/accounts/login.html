@@ -1,27 +1,54 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="auth-wrapper mt-5">
-    <div class="card p-4">
-        <h3 class="theme-header text-center">Login</h3>
-        <form method="POST">
-            {% csrf_token %}
-            {% for field in form %}
-            <div class="mb-3">
-                <label class="form-label fw-bold">{{ field.label }}</label>
-                {{ field }}
-                {% if field.errors %}
-                <div class="text-danger small mt-1">
-                    {{ field.errors|join:", " }}
-                </div>
-                {% endif %}
-            </div>
-            {% endfor %}
-            <button type="submit" class="btn btn-main w-100 fw-bold">Login</button>
-        </form>
-        <div class="mt-3 text-center">
-            Don't have an account? <a href="{% url 'register' %}" class="text-main-theme">Register</a>
+<div class="auth-wrapper mt-5 px-3">
+    <div class="card p-0 border-0 shadow-lg rounded-4 overflow-hidden backdrop-blur" style="background: rgba(255,255,255,0.85);">
+        <div class="bg-main-theme p-4 text-center text-white">
+            <div class="mb-3"><i class="bi bi-shield-lock-fill fs-1"></i></div>
+            <h3 class="fw-bold mb-1">Welcome Back</h3>
+            <p class="text-white-50 mb-0 small">Secure Telemedicine Access Portal</p>
         </div>
+        
+        <div class="card-body p-4 p-md-5">
+            <form method="POST">
+                {% csrf_token %}
+                {% for field in form %}
+                <div class="mb-4">
+                    <label class="form-label fw-bold small text-muted text-uppercase">{{ field.label }}</label>
+                    <div class="input-group border rounded-pill overflow-hidden bg-white p-1">
+                        <span class="input-group-text bg-transparent border-0 text-muted">
+                            {% if 'Email' in field.label %}<i class="bi bi-envelope"></i>
+                            {% elif 'Password' in field.label %}<i class="bi bi-key"></i>
+                            {% else %}<i class="bi bi-person"></i>{% endif %}
+                        </span>
+                        {{ field }}
+                    </div>
+                    {% if field.errors %}
+                    <div class="text-danger smallest fw-bold mt-1 px-3">
+                        {{ field.errors|join:", " }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                
+                <div class="d-grid mt-5">
+                    <button type="submit" class="btn btn-main btn-lg rounded-pill fw-bold shadow py-3">
+                        <i class="bi bi-box-arrow-in-right me-2"></i> Log In to Portal
+                    </button>
+                </div>
+            </form>
+            
+            <div class="mt-4 text-center">
+                <p class="text-muted small">Don't have an account yet?</p>
+                <a href="{% url 'register' %}" class="btn btn-outline-main btn-sm rounded-pill px-4 fw-bold shadow-sm">
+                    Create New Account
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="text-center mt-4 text-white-50 small">
+        <i class="bi bi-lock-fill me-1"></i> End-to-End Encrypted Consultation
     </div>
 </div>
 {% endblock %}

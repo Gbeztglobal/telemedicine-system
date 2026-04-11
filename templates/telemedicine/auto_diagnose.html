@@ -2,29 +2,141 @@
 
 {% block content %}
 <div class="row justify-content-center mt-4">
-    <div class="col-md-8">
-        <div class="card p-4">
-            <h3 class="theme-header text-center"><i class="bi bi-robot"></i> AI Auto-Diagnosis</h3>
-            <p class="text-muted text-center">Analyze your symptoms to check for Malaria or Cholera risks.</p>
+    <div class="col-lg-10 col-xl-9">
+        <div class="card p-0 border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="bg-main-theme p-4 text-center text-white">
+                <div class="mb-2"><i class="bi bi-robot fs-1"></i></div>
+                <h3 class="fw-bold">AI Diagnosis Engine</h3>
+                <p class="text-white-50 mb-0">Anatomical Triage & Risk Evaluation</p>
+            </div>
             
-            <form method="POST">
-                {% csrf_token %}
-                <div class="mb-4">
-                    <label class="form-label fw-bold">Describe your symptoms (Please be detailed) <span class="text-danger">*</span></label>
-                    <textarea class="form-control" name="symptoms" rows="4" required placeholder="e.g., I have been experiencing severe diarrhea, vomiting, and feel very dehydrated..."></textarea>
+            <div class="card-body p-4 p-md-5">
+                <div class="row g-5">
+                    <!-- Anatomical Map Col -->
+                    <div class="col-md-5 text-center border-md-end">
+                        <h6 class="fw-bold text-muted text-uppercase mb-4 smaller">Tap Pain Areas</h6>
+                        <div class="body-map-container mx-auto mb-4" style="max-width: 200px;">
+                            <!-- Simple Stylized SVG Silhouette -->
+                            <svg viewBox="0 0 100 200" class="w-100 h-auto body-svg">
+                                <path class="body-part" id="part-head" d="M50,10c5,0,10,5,10,12s-5,12-10,12s-10-5-10-12s5-12,10-12" data-symptom="Severe Headache, Fever" />
+                                <path class="body-part" id="part-chest" d="M35,38h30l5,40h-40l5-40" data-symptom="Fatigue, Body Pain" />
+                                <path class="body-part" id="part-stomach" d="M40,80h20l3,30l-26,0l3-30" data-symptom="Severe Diarrhea, Nausea" />
+                                <path class="body-part" id="part-joints" d="M30,40l-15,40m55-40l15,40M35,110l-5,70m40-70l5,70" data-symptom="Joint Pain, Muscle Weakness" />
+                            </svg>
+                        </div>
+                        <p class="smallest text-muted italic">Click parts of the silhouette to instantly trigger clinical triage suggestions.</p>
+                    </div>
+
+                    <!-- Input Col -->
+                    <div class="col-md-7">
+                        <form id="diagnosisForm" method="POST">
+                            {% csrf_token %}
+                            
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-dark d-flex align-items-center">
+                                    <i class="bi bi-person-lines-fill me-2 text-main-theme"></i> 
+                                    Symptom Breakdown
+                                </label>
+                                
+                                <div id="symptom-badges" class="d-flex flex-wrap gap-2 mb-3">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill symptom-chip" data-symptom="Severe Fever">Fever</button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill symptom-chip" data-symptom="Severe Headache">Headache</button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill symptom-chip" data-symptom="Severe Diarrhea">Diarrhea</button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill symptom-chip" data-symptom="Nausea & Vomiting">Vomiting</button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill symptom-chip" data-symptom="Body Pain">Body Pain</button>
+                                </div>
+
+                                <textarea id="symptomsField" class="form-control rounded-4 bg-light border-0 p-3 shadow-none mt-2" name="symptoms" rows="4" required placeholder="Describe your condition here..."></textarea>
+                            </div>
+                            
+                            <div class="mb-5">
+                                <label class="form-label fw-bold text-dark d-flex align-items-center">
+                                    <i class="bi bi-capsule me-2 text-accent"></i> 
+                                    Ongoing Meds (Optional)
+                                </label>
+                                <input type="text" class="form-control rounded-pill bg-light border-0 px-4 py-2 shadow-none" name="prescriptions" placeholder="e.g. Paracetamol...">
+                            </div>
+                            
+                            <div id="loadingState" class="text-center d-none py-4">
+                                <div class="spinner-border text-main-theme mb-3" role="status"></div>
+                                <h6 class="fw-bold text-main-theme animate-pulse">Running Clinical AI Engine...</h6>
+                            </div>
+
+                            <div id="actionButtons" class="d-grid gap-3">
+                                <button type="submit" class="btn btn-main btn-lg fw-bold rounded-pill shadow-lg py-3">
+                                    <i class="bi bi-shield-check me-2"></i> Execute Evaluation
+                                </button>
+                                <a href="{% url 'dashboard' %}" class="btn btn-link text-muted fw-bold btn-sm">Return</a>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-                
-                <div class="mb-4">
-                    <label class="form-label fw-bold">Previous Prescriptions / Medications taken (Optional)</label>
-                    <textarea class="form-control" name="prescriptions" rows="2" placeholder="e.g., Paracetamol, ORS..."></textarea>
-                </div>
-                
-                <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-main fw-bold"><i class="bi bi-search"></i> Run Diagnosis Engine</button>
-                    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
+
+<style>
+    .body-part { fill: #e2e8f0; stroke: #cbd5e1; stroke-width: 1; cursor: pointer; transition: all 0.3s; }
+    .body-part:hover { fill: var(--main-theme) !important; opacity: 0.6; }
+    .body-part.active { fill: var(--main-theme) !important; filter: drop-shadow(0 0 5px var(--main-theme)); stroke: white; }
+    
+    .symptom-chip { transition: all 0.2s; font-size: 0.75rem; font-weight: 600; }
+    .symptom-chip.active { background-color: var(--accent-theme) !important; color: black !important; border-color: var(--accent-theme); }
+    .animate-pulse { animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    
+    @media (max-width: 767px) {
+        .border-md-end { border-bottom: 1px solid #dee2e6; margin-bottom: 2rem; padding-bottom: 2rem; }
+    }
+</style>
+
+<script>
+    const field = document.getElementById('symptomsField');
+    const chips = document.querySelectorAll('.symptom-chip');
+    const parts = document.querySelectorAll('.body-part');
+
+    // Handle Body Part Selection
+    parts.forEach(part => {
+        part.addEventListener('click', function() {
+            this.classList.toggle('active');
+            const dataSymptom = this.dataset.symptom;
+            
+            // Auto-activate chips matching the part's data-symptom
+            chips.forEach(chip => {
+                if (dataSymptom.includes(chip.innerText)) {
+                    if (this.classList.contains('active')) {
+                        if (!chip.classList.contains('active')) chip.click();
+                    }
+                }
+            });
+        });
+    });
+
+    // Handle Symptom Chips
+    chips.forEach(chip => {
+        chip.addEventListener('click', function() {
+            this.classList.toggle('active');
+            const val = this.dataset.symptom;
+            
+            if (this.classList.contains('active')) {
+                const currentVal = field.value.trim();
+                field.value = (currentVal ? currentVal + ', ' : '') + val;
+            } else {
+                field.value = field.value
+                    .replace(val, '')
+                    .replace(/,\s*,/, ',')
+                    .replace(/^,\s*/, '')
+                    .replace(/,\s*$/, '')
+                    .trim();
+            }
+        });
+    });
+
+    // Handle Loading State
+    document.getElementById('diagnosisForm').onsubmit = function() {
+        document.getElementById('actionButtons').classList.add('d-none');
+        document.getElementById('loadingState').classList.remove('d-none');
+    };
+</script>
 {% endblock %}

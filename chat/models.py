@@ -6,7 +6,11 @@ class Message(models.Model):
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
     text_content = models.TextField(blank=True, null=True)
     voice_note = models.FileField(upload_to='voice_notes/', blank=True, null=True)
+    parent_message = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='replies')
+    is_edited = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     is_read = models.BooleanField(default=False)
 
     def __str__(self):

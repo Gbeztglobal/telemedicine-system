@@ -10,4 +10,5 @@ urlpatterns = [
     path('dashboard/', views.dashboard_redirect, name='dashboard'),
     path('profile/', views.profile, name='profile'),
     path('notifications/read/', views.mark_notifications_read, name='mark_notifications_read'),
+    path('notifications/read/<int:notification_id>/', views.mark_single_notification_read, name='mark_single_notification_read'),
 ]

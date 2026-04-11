@@ -46,3 +46,13 @@ def custom_logout(request):
 def mark_notifications_read(request):
     request.user.notifications.filter(is_read=False).update(is_read=True)
     return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
+
+@login_required
+def mark_single_notification_read(request, notification_id):
+    from django.http import JsonResponse
+    notification = request.user.notifications.filter(id=notification_id, is_read=False).first()
+    if notification:
+        notification.is_read = True
+        notification.save()
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error'}, status=404)

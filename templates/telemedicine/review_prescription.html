@@ -2,28 +2,76 @@
 
 {% block content %}
 <div class="row justify-content-center mt-4">
-    <div class="col-md-8">
-        <div class="card p-4">
-            <h3 class="theme-header text-center"><i class="bi bi-file-earmark-medical"></i> Issue Prescription</h3>
-            
-            <div class="mb-4 p-3 bg-light rounded border">
-                <h5>Patient: {{ req.patient.first_name }} {{ req.patient.last_name }}</h5>
-                <p class="mb-1"><strong>Request Details:</strong></p>
-                <p class="text-muted">{{ req.patient_notes }}</p>
+    <div class="col-md-9 col-lg-8">
+        <div class="card p-0 border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="bg-main-theme p-4 text-white d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="fw-bold mb-0"><i class="bi bi-file-earmark-medical-fill me-2"></i> Clinical Workstation</h3>
+                    <p class="text-white-50 mb-0 small">Verified Prescription Issuance</p>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-white text-main-theme rounded-pill p-2 px-3 fw-bold shadow-sm">ID: #RX-{{ req.id }}</span>
+                </div>
             </div>
-            
-            <form method="POST">
-                {% csrf_token %}
-                <div class="mb-4">
-                    <label class="form-label fw-bold">Doctor's Comments & Prescription <span class="text-danger">*</span></label>
-                    <textarea class="form-control" name="doctor_comments" rows="5" required placeholder="Write the actual prescription and comments here..."></textarea>
+
+            <div class="card-body p-4 p-md-5">
+                <!-- Patient Snapshot -->
+                <div class="row mb-5 g-4">
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-4 bg-light border h-100">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="{{ req.patient.avatar_url }}" class="rounded-circle me-3 border border-2 border-white shadow-sm" width="50" height="50" style="object-fit:cover;">
+                                <div>
+                                    <h6 class="fw-bold mb-0 text-dark">{{ req.patient.get_full_name }}</h6>
+                                    <small class="text-muted">{{ req.patient.get_role_display }}</small>
+                                </div>
+                            </div>
+                            <div class="text-secondary small">
+                                <strong class="text-dark">Patient Notes:</strong><br>
+                                "{{ req.patient_notes }}"
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-4 bg-light border h-100 text-center d-flex flex-column justify-content-center">
+                            <h6 class="small fw-bold text-muted text-uppercase mb-3">Recent Health Risk</h6>
+                            <!-- Re-using our visual gauges for the doctor -->
+                            {% with latest=req.patient.diagnoses.last %}
+                                {% if latest %}
+                                    <div class="progress rounded-pill overflow-hidden shadow-sm mb-2" style="height: 12px; background-color: #ddd;">
+                                        <div class="progress-bar {% if latest.malaria_risk == 'High' or latest.cholera_risk == 'High' %}bg-danger animate-pulse-fast{% else %}bg-success{% endif %}" 
+                                             style="width: {% if latest.malaria_risk == 'High' or latest.cholera_risk == 'High' %}100%{% else %}40%{% endif %}"></div>
+                                    </div>
+                                    <span class="fw-bold {% if latest.malaria_risk == 'High' or latest.cholera_risk == 'High' %}text-danger{% else %}text-success{% endif %}">
+                                        {{ latest.malaria_risk|default:latest.cholera_risk }} Risk Detected
+                                    </span>
+                                {% else %}
+                                    <p class="text-muted small mb-0">No recent AI assessment</p>
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-main fw-bold"><i class="bi bi-check-circle-fill"></i> Approve & Issue Prescription</button>
-                    <a href="{% url 'doctor_dashboard' %}" class="btn btn-outline-secondary">Back to Dashboard</a>
-                </div>
-            </form>
+
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label class="form-label fw-bold h6 text-dark"><i class="bi bi-pencil-square me-2 text-main-theme"></i> Formal Prescription & Instructions</label>
+                        <textarea class="form-control rounded-4 bg-light border-0 p-4 shadow-none" name="doctor_comments" rows="6" required placeholder="Type the medications, dosages, and pharmacy instructions here..."></textarea>
+                    </div>
+                    
+                    <div class="alert alert-info border-0 rounded-4 p-3 mb-5 small shadow-sm">
+                        <i class="bi bi-info-circle-fill me-2"></i> Once issued, this prescription will be instantly available in the patient's dashboard as a verified digital Rx card.
+                    </div>
+
+                    <div class="d-grid gap-3">
+                        <button type="submit" class="btn btn-main btn-lg fw-bold rounded-pill shadow-lg py-3">
+                            <i class="bi bi-check-circle-fill me-2"></i> Issue Digital Prescription
+                        </button>
+                        <a href="{% url 'doctor_dashboard' %}" class="btn btn-link text-muted fw-bold">Cancel and Return</a>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>
