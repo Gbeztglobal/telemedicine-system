@@ -8,11 +8,11 @@ class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True, label="Email Address")
     role = forms.ChoiceField(choices=User.ROLE_CHOICES, required=True, label="Select Role")
     phone_number = forms.CharField(max_length=15, required=True, label="Phone Number")
-    profile_picture = forms.ImageField(required=True, label="Profile Picture") # Made required to adhere to strict validation per prompt
+    gender = forms.ChoiceField(choices=User.GENDER_CHOICES, required=True, label="Gender")
 
     class Meta(UserCreationForm.Meta):
         model = User
-        fields = ('username', 'first_name', 'last_name', 'email', 'phone_number', 'role', 'profile_picture')
+        fields = ('username', 'first_name', 'last_name', 'email', 'phone_number', 'role', 'gender')
 
     def clean_phone_number(self):
         phone = self.cleaned_data.get('phone_number')

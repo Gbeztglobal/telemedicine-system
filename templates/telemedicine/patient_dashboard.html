@@ -6,13 +6,7 @@
     <div class="col-lg-4 mb-4">
         <div class="card p-4 text-center hover-lift h-100">
             <div class="position-relative d-inline-block mx-auto mb-4">
-                {% if user.profile_picture %}
-                    <img src="{{ user.profile_picture.url }}" class="rounded-circle shadow" width="140" height="140" style="object-fit:cover; border: 4px solid var(--accent-theme);" alt="Profile Picture">
-                {% else %}
-                    <div class="bg-secondary rounded-circle mx-auto shadow d-flex align-items-center justify-content-center text-white" style="width:140px; height:140px; border: 4px solid var(--accent-theme); font-size: 3rem;">
-                        <i class="bi bi-person"></i>
-                    </div>
-                {% endif %}
+                <img src="{{ user.avatar_url }}" class="rounded-circle shadow" width="140" height="140" style="object-fit:cover; border: 4px solid var(--accent-theme);" alt="Profile Picture">
                 <span class="position-absolute bottom-0 start-100 translate-middle p-2 bg-success border border-light rounded-circle" title="Active Account"></span>
             </div>
             <h3 class="fw-bold mb-1">{{ user.first_name }} {{ user.last_name }}</h3>
@@ -34,9 +28,6 @@
                 </a>
                 <a href="{% url 'book_appointment' %}" class="btn btn-accent btn-lg fw-bold d-flex align-items-center justify-content-center shadow-sm text-white">
                     <i class="bi bi-calendar-check-fill me-2 fs-5"></i> Book Appointment
-                </a>
-                <a href="{% url 'upload_report' %}" class="btn btn-outline-info btn-lg fw-bold d-flex align-items-center justify-content-center shadow-sm">
-                    <i class="bi bi-file-earmark-arrow-up-fill me-2 fs-5"></i> Upload Lab Report
                 </a>
             </div>
             
@@ -133,11 +124,7 @@
                 <div class="col-md-6">
                     <div class="card p-3 border-0 shadow-sm rounded-4 h-100 position-relative border-top border-4 {% if appt.status == 'confirmed' %}border-success{% elif appt.status == 'pending' %}border-warning{% else %}border-secondary{% endif %}">
                         <div class="d-flex align-items-center mb-3">
-                            {% if appt.doctor.profile_picture %}
-                                <img src="{{ appt.doctor.profile_picture.url }}" class="rounded-circle me-2 shadow-sm" width="40" height="40" style="object-fit:cover;">
-                            {% else %}
-                                <div class="bg-secondary rounded-circle me-2 d-flex align-items-center justify-content-center text-white" style="width:40px; height:40px;"><i class="bi bi-person"></i></div>
-                            {% endif %}
+                            <img src="{{ appt.doctor.avatar_url }}" class="rounded-circle me-2 shadow-sm" width="40" height="40" style="object-fit:cover;">
                             <div>
                                 <h6 class="mb-0 fw-bold small">Dr. {{ appt.doctor.last_name }}</h6>
                                 <span class="badge rounded-pill {% if appt.status == 'confirmed' %}bg-success{% elif appt.status == 'pending' %}bg-warning text-dark{% else %}bg-secondary{% endif %} px-2 py-1" style="font-size: 0.6rem;">{{ appt.get_status_display }}</span>
@@ -163,41 +150,6 @@
                 <h5 class="text-muted">No Scheduled Appointments</h5>
             </div>
         {% endif %}
-
-        <!-- Medical Reports Section -->
-        <h4 class="theme-header mt-5 d-flex align-items-center">
-            <span class="dashboard-stat-icon me-3"><i class="bi bi-file-earmark-medical-fill text-info"></i></span>
-            Medical & Laboratory Reports
-        </h4>
-        
-        {% if medical_reports %}
-            <div class="row g-3 mb-5">
-                {% for report in medical_reports %}
-                <div class="col-md-6">
-                    <div class="card p-3 border-0 shadow-sm rounded-4 h-100 border-start border-4 border-info">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="mb-0 fw-bold text-dark">{{ report.title }}</h6>
-                            <small class="text-muted">{{ report.created_at|date:"M d, Y" }}</small>
-                        </div>
-                        <p class="small text-muted mb-3">{{ report.description|default:"No description provided."|truncatechars:100 }}</p>
-                        <div class="d-flex gap-2">
-                            <a href="{{ report.file.url }}" class="btn btn-sm btn-light border rounded-pill px-3" target="_blank">
-                                <i class="bi bi-eye-fill me-1"></i> View
-                            </a>
-                            <a href="{{ report.file.url }}" class="btn btn-sm btn-info text-white rounded-pill px-3" download>
-                                <i class="bi bi-download me-1"></i> Download
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="card p-5 text-center mb-5 border-dashed bg-transparent border-2 border-secondary shadow-none">
-                <i class="bi bi-file-earmark-plus text-muted mb-3" style="font-size: 3rem;"></i>
-                <h5 class="text-muted">No Laboratory Reports Uploaded</h5>
-                <p class="text-muted mb-0">Upload your test results to share them with your doctors.</p>
-            </div>
         {% endif %}
     </div>
 </div>

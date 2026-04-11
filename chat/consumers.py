@@ -132,7 +132,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'voice_url': voice_url,
                 'sender_id': self.user.id,
                 'sender_name': self.user.username,
-                'sender_pic': self.user.profile_picture.url if self.user.profile_picture else None
+                'sender_pic': self.user.avatar_url
             }
         )
 

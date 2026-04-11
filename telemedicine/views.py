@@ -113,6 +113,7 @@ def book_appointment(request):
     return render(request, 'telemedicine/book_appointment.html', {'doctors': doctors})
 
 @login_required
+@login_required
 def confirm_appointment(request, appointment_id):
     if request.user.role != 'doctor':
         return redirect('patient_dashboard')
@@ -120,6 +121,24 @@ def confirm_appointment(request, appointment_id):
     appointment = get_object_or_404(Appointment, id=appointment_id, doctor=request.user)
     appointment.status = 'confirmed'
     appointment.save()
+    
+    # Send Notification to Patient
+    msg = f"Your appointment with Dr. {request.user.last_name} has been confirmed!"
+    Notification.objects.create(recipient=appointment.patient, actor=request.user, message=msg, link="/dashboard/")
+    
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f"notify_{appointment.patient.id}",
+        {
+            "type": "notify",
+            "payload": {
+                "message": msg,
+                "link": "/dashboard/",
+                "type": "appointment"
+            }
+        }
+    )
+    
     return redirect('doctor_dashboard')
 
 @login_required
@@ -131,14 +150,11 @@ def patient_record_detail(request, patient_id):
     diagnoses = patient.diagnoses.all().order_by('-created_at')
     prescriptions = patient.prescriptions.all().order_by('-created_at')
     appointments = patient.patient_appointments.all().order_by('-scheduled_time')
-    medical_reports = patient.medical_reports.all().order_by('-created_at')
-    
     return render(request, 'telemedicine/patient_record.html', {
         'patient': patient,
         'diagnoses': diagnoses,
         'prescriptions': prescriptions,
         'appointments': appointments,
-        'medical_reports': medical_reports
     })
 
 @login_required
@@ -175,24 +191,4 @@ def complete_appointment(request, appointment_id):
         
     return render(request, 'telemedicine/complete_appointment.html', {'appointment': appointment})
 
-@login_required
-def upload_report(request):
-    if request.user.role != 'patient':
-        return redirect('doctor_dashboard')
-        
-    if request.method == 'POST':
-        title = request.POST.get('title')
-        file = request.FILES.get('file')
-        description = request.POST.get('description', '')
-        
-        if file:
-            MedicalReport.objects.create(
-                patient=request.user,
-                title=title,
-                file=file,
-                description=description
-            )
-            messages.success(request, 'Medical report uploaded successfully!')
-            return redirect('patient_dashboard')
-            
-    return render(request, 'telemedicine/upload_report.html')
+    return render(request, 'telemedicine/complete_appointment.html', {'appointment': appointment})

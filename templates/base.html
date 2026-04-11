@@ -57,11 +57,7 @@
 
                         <li class="nav-item dropdown ms-lg-3">
                             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                                {% if user.profile_picture %}
-                                    <img src="{{ user.profile_picture.url }}" class="rounded-circle me-2 border border-light" width="32" height="32" style="object-fit:cover;">
-                                {% else %}
-                                    <i class="bi bi-person-circle me-1 fs-5"></i>
-                                {% endif %}
+                                <img src="{{ user.avatar_url }}" class="rounded-circle me-2 border border-light" width="32" height="32" style="object-fit:cover;">
                                 {{ user.first_name|default:user.username }}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">

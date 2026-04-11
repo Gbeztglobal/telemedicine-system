@@ -11,5 +11,4 @@ urlpatterns = [
     path('appointment/confirm/<int:appointment_id>/', views.confirm_appointment, name='confirm_appointment'),
     path('appointment/complete/<int:appointment_id>/', views.complete_appointment, name='complete_appointment'),
     path('patient-record/<int:patient_id>/', views.patient_record_detail, name='patient_record_detail'),
-    path('report/upload/', views.upload_report, name='upload_report'),
 ]
