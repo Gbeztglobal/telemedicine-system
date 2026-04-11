@@ -33,6 +33,12 @@ def chat_room(request, user_id):
     })
 
 @login_required
+def legacy_chat_redirect(request, user_id):
+    """Failsafe to redirect old /chat/X/ links to /chat/room/X/"""
+    from django.shortcuts import redirect
+    return redirect('chat_room', user_id=user_id)
+
+@login_required
 def upload_voice_note(request):
     if request.method == 'POST' and request.FILES.get('voice_note'):
         from .models import Message
