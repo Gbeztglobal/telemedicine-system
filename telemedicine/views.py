@@ -7,31 +7,38 @@ from .services.ai_diagnosis import analyze_symptoms
 
 @login_required
 def patient_dashboard(request):
-    if request.user.role != 'patient':
-        return redirect('doctor_dashboard')
-    
-    diagnoses = request.user.diagnoses.all().order_by('-created_at')
-    appointments = request.user.patient_appointments.all().order_by('scheduled_time')
-    prescription_requests = request.user.prescription_requests.all().order_by('-created_at')
-    return render(request, 'telemedicine/patient_dashboard.html', {
-        'diagnoses': diagnoses,
-        'appointments': appointments,
-        'prescription_requests': prescription_requests,
-    })
+    try:
+        if request.user.role != 'patient':
+            return redirect('doctor_dashboard')
+        
+        diagnoses = request.user.diagnoses.all().order_by('-created_at')
+        appointments = request.user.patient_appointments.all().order_by('scheduled_time')
+        prescription_requests = request.user.prescription_requests.all().order_by('-created_at')
+        
+        return render(request, 'telemedicine/patient_dashboard.html', {
+            'diagnoses': diagnoses,
+            'appointments': appointments,
+            'prescription_requests': prescription_requests,
+        })
+    except Exception as e:
+        return render(request, 'telemedicine/error_debug.html', {'error': str(e), 'view': 'Patient Dashboard'})
 
 @login_required
 def doctor_dashboard(request):
-    if request.user.role != 'doctor':
-        return redirect('patient_dashboard')
-        
-    appointments = request.user.doctor_appointments.all().order_by('scheduled_time')
-    patients = User.objects.filter(role='patient')
-    prescription_requests = PrescriptionRequest.objects.filter(status='pending').order_by('-created_at')
-    return render(request, 'telemedicine/doctor_dashboard.html', {
-        'appointments': appointments,
-        'patients': patients,
-        'prescription_requests': prescription_requests
-    })
+    try:
+        if request.user.role != 'doctor':
+            return redirect('patient_dashboard')
+            
+        appointments = request.user.doctor_appointments.all().order_by('scheduled_time')
+        patients = User.objects.filter(role='patient')
+        prescription_requests = PrescriptionRequest.objects.filter(status='pending').order_by('-created_at')
+        return render(request, 'telemedicine/doctor_dashboard.html', {
+            'appointments': appointments,
+            'patients': patients,
+            'prescription_requests': prescription_requests
+        })
+    except Exception as e:
+        return render(request, 'telemedicine/error_debug.html', {'error': str(e), 'view': 'Doctor Dashboard'})
 
 @login_required
 def auto_diagnose(request):

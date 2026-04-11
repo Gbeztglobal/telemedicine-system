@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5 pt-5">
+    <div class="card p-5 border-danger shadow">
+        <div class="text-center">
+            <i class="bi bi-bug-fill text-danger" style="font-size: 4rem;"></i>
+            <h2 class="fw-bold mt-3">Diagnostic Debug Page</h2>
+            <p class="text-muted">Something went wrong in the <strong>{{ view }}</strong>.</p>
+        </div>
+        
+        <div class="bg-light p-4 rounded-4 mt-4 border">
+            <h6 class="fw-bold text-uppercase small text-muted mb-2">Technical Error Message:</h6>
+            <code class="text-danger fw-bold" style="word-break: break-all;">{{ error }}</code>
+        </div>
+        
+        <div class="mt-5 text-center">
+            <p>Please send a screenshot of this page back to me.</p>
+            <a href="{% url 'home' %}" class="btn btn-main-theme rounded-pill px-4 fw-bold">Return Home</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

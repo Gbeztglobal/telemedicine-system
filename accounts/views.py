@@ -5,19 +5,22 @@ from django.contrib import messages
 from .forms import CustomUserCreationForm, ProfileUpdateForm
 
 def register(request):
-    if request.user.is_authenticated:
-        return redirect('dashboard')
-        
-    if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+    try:
+        if request.user.is_authenticated:
             return redirect('dashboard')
-    else:
-        form = CustomUserCreationForm()
-    
-    return render(request, 'accounts/register.html', {'form': form})
+            
+        if request.method == 'POST':
+            form = CustomUserCreationForm(request.POST)
+            if form.is_valid():
+                user = form.save()
+                login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+                return redirect('dashboard')
+        else:
+            form = CustomUserCreationForm()
+        
+        return render(request, 'accounts/register.html', {'form': form})
+    except Exception as e:
+        return render(request, 'telemedicine/error_debug.html', {'error': str(e), 'view': 'Registration'})
 
 @login_required
 def profile(request):
