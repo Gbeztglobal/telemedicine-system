@@ -17,6 +17,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
+    'channels',
     'accounts',
     'telemedicine',
     'chat',
@@ -51,8 +52,9 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'core.wsgi.application'
+ASGI_APPLICATION = 'core.asgi.application'
 
-# --- DATABASE CONFIGURATION (Fix for Render) ---
+# --- DATABASE CONFIGURATION ---
 DATABASES = {
     'default': dj_database_url.config(
         default='sqlite:///db.sqlite3',
@@ -60,17 +62,31 @@ DATABASES = {
     )
 }
 
-# --- CLOUDINARY & MEDIA SETTINGS ---
+# --- REDIS / CHANNELS CONFIGURATION ---
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379')],
+        },
+    },
+}
+
+# --- CLOUDINARY & MEDIA SETTINGS (Fix: removed DEFAULT_FILE_STORAGE conflict) ---
 CLOUDINARY_STORAGE = {}
 if os.environ.get('CLOUDINARY_URL'):
     CLOUDINARY_STORAGE['CLOUDINARY_URL'] = os.environ.get('CLOUDINARY_URL')
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    PROD_STORAGE_BACKEND = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 else:
-    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+    PROD_STORAGE_BACKEND = 'django.core.files.storage.FileSystemStorage'
 
 STORAGES = {
-    "default": {"BACKEND": DEFAULT_FILE_STORAGE},
-    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
+    "default": {
+        "BACKEND": PROD_STORAGE_BACKEND,
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
 }
 
 AUTH_USER_MODEL = 'accounts.User'
