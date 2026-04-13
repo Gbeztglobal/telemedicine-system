@@ -1,272 +1,120 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+/* Telemedicine System - Classic Green Theme */
 
 :root {
-    --main-theme: #0A3D62; /* Navy Dark Trust Blue */
-    --accent-theme: #00A896; /* Teal Medical Accent */
-    --light-theme: #E5F0F9;
-    --dark-theme: #062840;
-    --medical-bg: #F4F8FB;
+    --main-theme: #198754; /* Classic Bootstrap Green */
+    --main-theme-dark: #157347;
+    --light-bg: #f8f9fa;
 }
 
 body {
-    background-color: var(--medical-bg);
-    background-image: 
-        radial-gradient(circle at 15% 50%, rgba(0, 168, 150, 0.05), transparent 25%),
-        radial-gradient(circle at 85% 30%, rgba(10, 61, 98, 0.04), transparent 30%);
-    background-attachment: fixed;
+    background-color: var(--light-bg);
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
-    font-family: 'Outfit', sans-serif;
-    color: #2D3748;
+    font-family: 'Segoe UI', Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #333;
 }
 
-nav.navbar {
-    background: linear-gradient(135deg, var(--main-theme), var(--dark-theme)) !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    padding: 15px 0;
-}
-
-.navbar-brand {
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    font-size: 1.4rem;
+.bg-main-theme {
+    background-color: var(--main-theme) !important;
 }
 
 .text-main-theme {
     color: var(--main-theme) !important;
 }
 
-.text-accent {
-    color: var(--accent-theme) !important;
-}
-
 .btn-main {
-    background: linear-gradient(135deg, var(--main-theme), var(--dark-theme));
+    background-color: var(--main-theme);
     color: white;
     border: none;
-    border-radius: 8px;
-    font-weight: 500;
-    padding: 10px 20px;
-    transition: all 0.3s ease;
+    transition: all 0.2s;
 }
 
 .btn-main:hover {
-    background: linear-gradient(135deg, var(--dark-theme), #041c2c);
+    background-color: var(--main-theme-dark);
     color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(10, 61, 98, 0.3);
 }
 
-.btn-accent {
-    background-color: var(--accent-theme);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-weight: 500;
-    padding: 10px 20px;
-    transition: all 0.3s ease;
-}
-
-.btn-accent:hover {
-    background-color: #008f80;
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 168, 150, 0.3);
-}
-
+/* Card Styling - Classic */
 .card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.2);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.03);
-    border-radius: 16px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.125);
+    border-radius: 8px;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    margin-bottom: 20px;
 }
 
-.card.hover-lift:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.06);
+.card-header {
+    background-color: rgba(0,0,0,0.03);
+    font-weight: bold;
 }
 
+/* Video Call Interface (WhatsApp Inspired - KEEPING THIS SWEET) */
+.whatsapp-video-container { 
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+    background: #000; z-index: 9999; 
+}
+.remote-video { 
+    width: 100%; height: 100%; object-fit: cover; 
+}
+.video-overlay {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 20%, transparent 80%, rgba(0,0,0,0.6) 100%);
+    pointer-events: none;
+}
+.top-info {
+    position: absolute; top: 0; left: 0; right: 0; padding: 30px;
+    z-index: 20;
+}
+.local-v-pip {
+    position: absolute; top: 100px; right: 20px;
+    width: 120px; height: 180px; border-radius: 15px;
+    overflow: hidden; border: 2px solid rgba(255,255,255,0.2);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    z-index: 100;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+.local-v-pip video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+
+.bottom-controls {
+    position: absolute; bottom: 50px; left: 0; right: 0;
+    display: flex; justify-content: center; gap: 25px;
+    z-index: 20;
+}
+.control-circle {
+    width: 60px; height: 60px; border-radius: 50%;
+    border: none; background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; transition: all 0.2s;
+}
+.control-circle:hover { background: rgba(255,255,255,0.4); transform: scale(1.1); }
+.control-circle.active-off { background: #ea4335 !important; }
+.control-circle.hangup { background: #ff3b30; font-size: 1.8rem; width: 70px; height: 70px; margin-top: -5px; }
+
+/* Clinical HUD Sidebar (Doctor Only) */
+.records-overlay {
+    position: absolute; top: 100px; left: -350px;
+    width: 320px; height: 400px; background: white;
+    border-radius: 20px; z-index: 500;
+    transition: left 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.records-overlay.active { left: 20px; }
+
+/* Dashboard Styles */
 .theme-header {
-    border-bottom: 2px solid var(--light-theme);
-    padding-bottom: 15px;
-    margin-bottom: 25px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
     color: var(--main-theme);
-    font-weight: 700;
-    position: relative;
 }
 
-.theme-header::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    width: 60px;
-    height: 2px;
-    background-color: var(--accent-theme);
-}
+.smallest { font-size: 0.75rem; }
+.smaller { font-size: 0.85rem; }
 
-/* Dashboard specific elements */
-.dashboard-stat-icon {
-    font-size: 2.5rem;
-    color: var(--accent-theme);
-    background: rgba(0, 168, 150, 0.1);
-    padding: 16px;
-    border-radius: 12px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Auth Forms */
-.auth-wrapper {
-    max-width: 500px;
-    margin: 40px auto;
-}
-
-.auth-wrapper .card {
-    padding: 2.5rem;
-}
-
-/* Call Interface */
-.video-container {
-    position: relative;
-    width: 100%;
-    max-width: 900px;
-    margin: 0 auto;
-    background: #000;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.25);
-    border: 4px solid var(--main-theme);
-}
-
-#remoteVideo {
-    width: 100%;
-    height: auto;
-    background: #111;
-}
-
-#localVideo {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    width: 160px;
-    height: 120px;
-    background: #333;
-    border: 3px solid rgba(255,255,255,0.8);
-    border-radius: 12px;
-    z-index: 10;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-}
-
-.call-controls {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    padding: 25px;
-}
-
-.call-controls .btn {
-    width: 65px;
-    height: 65px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    transition: transform 0.2s ease;
-}
-
-.call-controls .btn:hover {
-    transform: scale(1.1);
-}
-
-/* Premium Animations & Utilities */
-.animate-pulse-fast {
-    animation: pulse-red 1s infinite cubic-bezier(0.4, 0, 0.6, 1);
-}
-
-@keyframes pulse-red {
-    0%, 100% { opacity: 1; filter: brightness(1); }
-    50% { opacity: 0.7; filter: brightness(1.2); }
-}
-
-.smaller {
-    font-size: 0.8rem;
-}
-
-.smallest {
-    font-size: 0.65rem;
-}
-
-.bg-main {
-    background-color: var(--main-theme) !important;
-}
-
-.backdrop-blur {
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-}
-
-/* Mobile Bottom Navigation */
-.mobile-bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 70px;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(15px);
-    border-top: 1px solid rgba(0,0,0,0.05);
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    z-index: 1050;
-    box-shadow: 0 -5px 25px rgba(0,0,0,0.05);
-    padding-bottom: env(safe-area-inset-bottom);
-}
-
-.mobile-nav-item {
-    text-decoration: none;
-    color: #A0AEC0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.7rem;
-    font-weight: 600;
-    transition: all 0.3s;
-    width: 25%;
-}
-
-.mobile-nav-item i {
-    font-size: 1.4rem;
-    margin-bottom: 2px;
-}
-
-.mobile-nav-item.active {
-    color: var(--accent-theme);
-}
-
-.mobile-nav-item.active i {
-    transform: translateY(-3px);
-    color: var(--accent-theme);
-}
-
-@media (min-width: 992px) {
-    .mobile-bottom-nav { display: none !important; }
-}
-
-@media (max-width: 991px) {
-    body { padding-bottom: 80px; }
-    .navbar-collapse {
-        background: var(--main-theme);
-        padding: 20px;
-        border-radius: 0 0 20px 20px;
-        margin-top: 10px;
-    }
-}
+/* Profile Styles - Preserve Premium Logic */
+.bg-gradient-medical { background: linear-gradient(135deg, var(--main-theme) 0%, var(--main-theme-dark) 100%); }
+.avatar-preview { transition: all 0.3s; }
+.identity-avatar-container:hover .avatar-overlay { opacity: 1 !important; }
+.identity-avatar-container:hover .avatar-preview { filter: blur(2px); }
+.transition-all { transition: all 0.3s ease; }

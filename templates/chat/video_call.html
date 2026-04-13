@@ -304,6 +304,42 @@
         window.history.back();
     };
 
+    // View Swapping Logic (WhatsApp Style)
+    let isSwapped = false;
+    const localPip = document.getElementById('localPip');
+
+    localPip.onclick = () => {
+        if (!peerConnection || peerConnection.connectionState !== 'connected') return;
+        
+        isSwapped = !isSwapped;
+        
+        // Swap srcObjects
+        const localStreamObj = localVideo.srcObject;
+        const remoteStreamObj = remoteVideo.srcObject;
+        
+        localVideo.srcObject = remoteStreamObj;
+        remoteVideo.srcObject = localStreamObj;
+        
+        // Handle Muting and Mirroring
+        if (isSwapped) {
+            // Main background is now LOCAL (needs mirror)
+            remoteVideo.style.transform = 'scaleX(-1)';
+            localVideo.style.transform = 'none'; // Remote in PIP (no mirror)
+            localVideo.muted = false; // We want to hear remote in PIP
+            remoteVideo.muted = true; // Don't hear ourselves in background
+        } else {
+            // Main background is now REMOTE (no mirror)
+            remoteVideo.style.transform = 'none';
+            localVideo.style.transform = 'scaleX(-1)'; // Local in PIP (mirror)
+            localVideo.muted = true; // Local is muted in PIP
+            remoteVideo.muted = false; // Remote is heard in background
+        }
+        
+        // Tiny animation POP
+        localPip.style.transform = 'scale(1.1)';
+        setTimeout(() => localPip.style.transform = 'scale(1)', 200);
+    };
+
     init();
 </script>
 {% endblock %}
