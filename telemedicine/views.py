@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Diagnosis, Appointment, Prescription, PrescriptionRequest
+from diagnosis.models import Diagnosis
+from appointments.models import Appointment
+from records.models import Prescription, PrescriptionRequest
 from accounts.models import User
 from .services.ai_diagnosis import analyze_symptoms, generate_consultation_summary
 from django.http import JsonResponse
