@@ -1,240 +1,52 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<div class="row mb-5 mt-3">
-    <!-- Profile Sidebar -->
+<!-- ABSOLUTE FORCE RESTORE V3 -->
+<div class="row mt-4">
     <div class="col-lg-4 mb-4">
-        <div class="card p-4 text-center hover-lift h-100">
-            <div class="position-relative d-inline-block mx-auto mb-4">
-                <img src="{{ user.avatar_url }}" class="rounded-circle shadow" width="140" height="140" style="object-fit:cover; border: 4px solid var(--main-theme);" alt="Profile Picture">
-                <span class="position-absolute bottom-0 start-100 translate-middle p-2 bg-success border border-light rounded-circle" title="Active Account"></span>
-            </div>
-            <h3 class="fw-bold mb-1">Dr. {{ user.last_name }}</h3>
-            <p class="text-muted mb-3">{{ user.email }}</p>
-            <div class="d-flex justify-content-center gap-2 mb-4">
-                <span class="badge bg-primary px-3 py-2 rounded-pill"><i class="bi bi-star-fill text-warning"></i> Health Worker</span>
-                <span class="badge bg-light text-dark border px-3 py-2 rounded-pill"><i class="bi bi-telephone"></i> {{ user.phone_number }}</span>
-            </div>
-            
-            <hr class="text-muted opacity-25">
-            
-            <div class="row mt-4 text-center">
-                <div class="col-6 border-end">
-                    <h3 class="fw-bold text-main-theme">{{ prescription_requests.count|default:"0" }}</h3>
-                    <p class="text-muted small text-uppercase fw-bold">Pending<br>Requests</p>
-                </div>
-                <div class="col-6">
-                    <h3 class="fw-bold text-accent">{{ patients.count|default:"0" }}</h3>
-                    <p class="text-muted small text-uppercase fw-bold">Active<br>Patients</p>
-                </div>
-            </div>
-
-            <hr class="text-muted opacity-25">
-            <div class="d-grid mt-2">
-                <a href="{% url 'profile' %}" class="btn btn-light border fw-bold text-muted small"><i class="bi bi-gear me-2"></i> Edit Profile</a>
-            </div>
+        <div class="card p-4 text-center">
+            <img src="{{ user.avatar_url }}" class="rounded-circle mx-auto mb-3" width="120" height="120" style="object-fit:cover; border: 3px solid #198754;">
+            <h4>Dr. {{ user.last_name }}</h4>
+            <p class="text-muted small">{{ user.email }}</p>
+            <a href="{% url 'profile' %}" class="btn btn-sm btn-outline-secondary">Edit Profile</a>
         </div>
-
-        <!-- Urgent Triage Sidebar -->
-        {% if urgent_patients %}
-        <div class="card p-4 mt-4 border-0 shadow-lg bg-white overflow-hidden position-relative">
-            <div class="position-absolute top-0 end-0 p-3 opacity-10 fs-1"><i class="bi bi-heart-pulse-fill"></i></div>
-            <h6 class="text-start text-danger text-uppercase fw-bold mb-3" style="font-size: 0.8rem;">
-                <i class="bi bi-exclamation-triangle-fill animate-pulse-fast me-2"></i> Urgent Attention
-            </h6>
-            <div class="list-group list-group-flush">
-                {% for up in urgent_patients %}
-                <div class="list-group-item bg-transparent border-0 px-0 py-3 d-flex align-items-center justify-content-between">
-                    <div class="d-flex align-items-center">
-                        <img src="{{ up.avatar_url }}" class="rounded-circle border border-2 border-danger me-2 shadow-sm" width="35" height="35" style="object-fit:cover;">
-                        <div>
-                            <div class="fw-bold smaller text-dark">{{ up.last_name }}</div>
-                            <small class="smallest text-danger">{{ up.latest_diagnosis.malaria_risk|default:up.latest_diagnosis.cholera_risk }} Risk</small>
-                        </div>
-                    </div>
-                    <div class="btn-group">
-                        <a href="{% url 'chat_room' up.id %}" class="btn btn-sm btn-outline-danger rounded-circle p-1 px-2" title="Emergency Chat"><i class="bi bi-chat-dots"></i></a>
-                        <a href="{% url 'patient_record_detail' up.id %}" class="btn btn-sm btn-danger rounded-circle p-1 px-2" title="View Records"><i class="bi bi-file-medical"></i></a>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
     </div>
-    
-    <!-- Main Content Area -->
     <div class="col-lg-8">
-        
-        <!-- Search & Triage Header -->
-        <div class="card border-0 shadow-sm rounded-4 p-3 bg-white mb-4">
-            <div class="row align-items-center">
-                <div class="col-md-6 mb-3 mb-md-0">
-                    <h5 class="fw-bold mb-0">Clinical Command Center</h5>
-                </div>
-                <div class="col-md-6 text-end">
-                    <div class="input-group border rounded-pill overflow-hidden bg-light px-2">
-                        <span class="input-group-text bg-transparent border-0 text-muted"><i class="bi bi-search"></i></span>
-                        <input type="text" id="dashboardSearch" class="form-control border-0 bg-transparent py-2" placeholder="Search patients or requests..." style="font-size: 0.9rem;">
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Prescription Requests -->
-        <h4 class="theme-header d-flex align-items-center">
-            <span class="dashboard-stat-icon me-3"><i class="bi bi-file-earmark-medical"></i></span>
-            Action Required: Prescription Requests
-        </h4>
-        
-        {% if prescription_requests %}
-            <div class="row g-3 mb-5">
-                {% for req in prescription_requests %}
-                <div class="col-12 searchable-item" data-search="{{ req.patient.first_name }} {{ req.patient.last_name }} {{ req.patient_notes }}">
-                    <div class="card p-4 hover-lift shadow-sm border-start border-4 border-warning">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <div class="d-flex align-items-center">
-                                <img src="{{ req.patient.avatar_url }}" class="rounded-circle me-3 shadow-sm" width="50" height="50" style="object-fit:cover;">
-                                <div>
-                                    <h6 class="mb-0 fw-bold">{{ req.patient.first_name }} {{ req.patient.last_name }}</h6>
-                                    <small class="text-muted"><i class="bi bi-clock me-1"></i>{{ req.created_at|timesince }} ago</small>
-                                </div>
-                            </div>
-                            <a href="{% url 'review_prescription' req.id %}" class="btn btn-accent shadow-sm fw-bold px-4 rounded-pill">
-                                <i class="bi bi-pencil-square me-2"></i> Review
-                            </a>
-                        </div>
-                        <div class="bg-light p-3 rounded text-secondary border">
-                            "{{ req.patient_notes }}"
-                            {% if req.lab_report %}
-                            <div class="mt-2 text-start">
-                                <a href="{{ req.lab_report.url }}" target="_blank" class="smallest fw-bold text-main-theme">
-                                    <i class="bi bi-file-earmark-pdf-fill text-danger me-1"></i> VIEW LAB REPORT
-                                </a>
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-
-        <!-- Pending Appointments -->
-        <h4 class="theme-header mt-5 d-flex align-items-center">
-            <span class="dashboard-stat-icon me-3"><i class="bi bi-calendar-event-fill"></i></span>
-            Pending Appointments
-        </h4>
-        
-        {% if appointments %}
-            <div class="row g-3 mb-5">
-                {% for appt in appointments %}
-                {% if appt.status == 'pending' %}
-                <div class="col-md-6 searchable-item" data-search="{{ appt.patient.first_name }} {{ appt.patient.last_name }}">
-                    <div class="card p-3 border-0 shadow-sm rounded-4 h-100 border-start border-4 border-warning">
-                        <div class="d-flex align-items-center mb-3">
-                                <img src="{{ appt.patient.avatar_url }}" class="rounded-circle me-2 shadow-sm" width="40" height="40" style="object-fit:cover;">
-                            <div>
-                                <h6 class="mb-0 fw-bold small">{{ appt.patient.first_name }} {{ appt.patient.last_name }}</h6>
-                                <small class="text-muted">{{ appt.scheduled_time|date:"M d @ H:i" }}</small>
-                            </div>
-                        </div>
-                        <p class="small text-secondary mb-3">"{{ appt.notes|default:"No notes."|truncatechars:100 }}"</p>
-                        <div class="d-grid">
-                            <form action="{% url 'confirm_appointment' appt.id %}" method="POST">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-success w-100 rounded-pill fw-bold shadow-sm">
-                                    <i class="bi bi-check-lg me-1"></i> Confirm Appointment
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="card p-4 text-center mb-5 bg-transparent border-2 border-dashed border-secondary shadow-none">
-                <p class="text-muted mb-0 small">No pending appointments.</p>
-            </div>
-        {% endif %}
-
-        <!-- Patient Directory -->
-        <h4 class="theme-header mt-5">
-            <i class="bi bi-people-fill me-2"></i> Patient Directory
-        </h4>
-        
-        <div class="card shadow-sm">
+        <h4 class="text-success mb-4 font-weight-bold">Patient Directory</h4>
+        <div class="card shadow-sm border-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="bg-light">
                         <tr>
-                            <th class="py-3 px-4">Patient</th>
-                            <th class="py-3 px-4 text-center">Health Status</th>
-                            <th class="py-3 px-4">Contact</th>
-                            <th class="py-3 px-4 text-end">Actions</th>
+                            <th class="px-4">Patient Name</th>
+                            <th>Status</th>
+                            <th>Contact</th>
+                            <th class="text-end px-4">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for patient in patients %}
-                        <tr class="searchable-item" data-search="{{ patient.first_name }} {{ patient.last_name }}">
+                        <tr>
                             <td class="px-4">
-                                <div class="d-flex align-items-center">
-                                    <img src="{{ patient.avatar_url }}" class="rounded-circle me-3" width="40" height="40" style="object-fit:cover;">
-                                    <div>
-                                        <div class="fw-bold">{{ patient.first_name }} {{ patient.last_name }}</div>
-                                        <small class="text-muted">{{ patient.email }}</small>
-                                    </div>
-                                </div>
+                                <span class="fw-bold text-dark">{{ patient.first_name }} {{ patient.last_name }}</span>
                             </td>
-                            <td class="px-4 text-center">
-                                {% if patient.is_high_risk %}
-                                    <span class="badge bg-danger rounded-pill px-3">High Risk</span>
-                                {% elif patient.latest_diagnosis %}
-                                    <span class="badge bg-success rounded-pill px-3">Stable</span>
+                            <td>
+                                {% if patient.latest_diagnosis %}
+                                <span class="badge bg-success">Stable</span>
                                 {% else %}
-                                    <span class="text-muted small">No diagnosis</span>
+                                <span class="badge bg-secondary">New</span>
                                 {% endif %}
                             </td>
-                            <td class="px-4 text-secondary small">
-                                {{ patient.phone_number }}
-                            </td>
-                            <td class="px-4 text-end">
-                                <div class="btn-group">
-                                    <a href="{% url 'patient_record_detail' patient.id %}" class="btn btn-sm btn-outline-success">
-                                        Record
-                                    </a>
-                                    <a href="{% url 'chat_room' patient.id %}" class="btn btn-sm btn-success ms-2">
-                                        Chat
-                                    </a>
-                                </div>
+                            <td>{{ patient.phone_number }}</td>
+                            <td class="text-end px-4">
+                                <a href="{% url 'patient_record_detail' patient.id %}" class="btn btn-sm btn-outline-success">Record</a>
+                                <a href="{% url 'chat_room' patient.id %}" class="btn btn-sm btn-success ms-1">Chat</a>
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-            {% if not patients %}
-            <div class="p-4 text-center text-muted">No patients registered yet.</div>
-            {% endif %}
         </div>
     </div>
 </div>
-
-{% endblock %}
-
-{% block scripts %}
-<script>
-    document.getElementById('dashboardSearch').addEventListener('input', function(e) {
-        const query = e.target.value.toLowerCase();
-        document.querySelectorAll('.searchable-item').forEach(el => {
-            const searchData = el.getAttribute('data-search').toLowerCase();
-            if (searchData.includes(query)) {
-                el.classList.remove('d-none');
-            } else {
-                el.classList.add('d-none');
-            }
-        });
-    });
-</script>
 {% endblock %}

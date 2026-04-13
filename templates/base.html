@@ -1,213 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- FORCE SYNC V2 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Telemedicine System</title>
-    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/style.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
     <nav class="navbar navbar-expand-lg navbar-dark bg-main-theme">
         <div class="container">
             <a class="navbar-brand fw-bold" href="#"><i class="bi bi-heart-pulse-fill me-2"></i>Telemedicine System</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-                <ul class="navbar-nav align-items-center">
+            <div class="collapse navbar-collapse justify-content-end">
+                <ul class="navbar-nav">
                     {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link active fw-bold" href="{% url 'dashboard' %}">Dashboard</a>
-                        </li>
-                        {% if user.role == 'patient' %}
-                        <li class="nav-item">
-                            <a class="nav-link fw-bold" href="{% url 'doctor_directory' %}">Find Doctors</a>
-                        </li>
-                        {% endif %}
-                        
-                        <!-- Notification Bell -->
-                        <li class="nav-item me-2 position-relative">
-                            <a class="nav-link" href="#" id="notificationDropdown" role="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-bell-fill fs-5"></i>
-                                <span id="notification-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger {% if unread_count == 0 %}d-none{% endif %}">{{ unread_count|default:0 }}</span>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 p-0 overflow-hidden" style="width: 300px;" id="notification-list">
-                                <li class="p-3 bg-light border-bottom d-flex justify-content-between">
-                                    <span class="fw-bold">Notifications</span>
-                                    <a href="{% url 'mark_notifications_read' %}" class="small text-decoration-none">Clear All</a>
-                                </li>
-                                <div id="notification-items" style="max-height: 400px; overflow-y: auto;">
-                                    {% for notify in unread_notifications %}
-                                    <li>
-                                        <a class="dropdown-item p-3 border-bottom d-flex align-items-center" href="{{ notify.link|default:'#' }}">
-                                            <div class="bg-light rounded-circle p-2 me-3"><i class="bi bi-info-circle text-success"></i></div>
-                                            <div>
-                                                <div class="small fw-bold text-dark">{{ notify.message }}</div>
-                                                <div class="text-muted smaller">{{ notify.created_at|timesince }} ago</div>
-                                            </div>
-                                        </a>
-                                    </li>
-                                    {% empty %}
-                                    <li class="p-4 text-center text-muted small">No new notifications</li>
-                                    {% endfor %}
-                                </div>
-                                <li class="border-top text-center p-2">
-                                    <a href="#" class="text-main-theme small fw-bold text-decoration-none">View All</a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <li class="nav-item dropdown ms-lg-3">
-                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                                <img src="{{ user.avatar_url }}" class="rounded-circle me-2 border border-light" width="32" height="32" style="object-fit:cover;">
-                                {{ user.first_name|default:user.username }}
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
-                                <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="bi bi-person-circle me-2"></i> My Profile</a></li>
-                                <li><a class="dropdown-item" href="{% url 'dashboard' %}"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right me-2"></i> Logout</a></li>
-                            </ul>
-                        </li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
                     {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">Login</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-light ms-lg-2 rounded-pill px-4 fw-bold" href="{% url 'register' %}">Register</a>
-                        </li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
                     {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
-
     <div class="container mt-4 mb-5">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endfor %}
-        {% endif %}
-        
         {% block content %}{% endblock %}
     </div>
-
-    <!-- Real-time Notification Toasts -->
-    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1060;">
-        <div id="liveToast" class="toast hide border-0 shadow-sm rounded-3 overflow-hidden" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header bg-main-theme text-white border-bottom-0">
-                <i class="bi bi-bell-fill me-2"></i>
-                <strong class="me-auto">New Notification</strong>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-            <div class="toast-body p-3 bg-white">
-                <p id="toast-message" class="mb-0 text-dark fw-medium"></p>
-                <div class="mt-2 text-end">
-                    <a id="toast-link" href="#" class="btn btn-sm btn-main px-3 rounded-pill small">View Now</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <footer class="bg-main-theme text-white text-center py-3 mt-auto">
         <p class="mb-0">&copy; 2026 Telemedicine System. All rights reserved.</p>
     </footer>
-
-    <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    {% if user.is_authenticated %}
-    <script>
-        const notifyScheme = window.location.protocol === "https:" ? "wss" : "ws";
-        const notifySocket = new WebSocket(`${notifyScheme}://${window.location.host}/ws/notifications/`);
-        const badge = document.getElementById('notification-badge');
-        const itemsContainer = document.getElementById('notification-items');
-        const toast = new bootstrap.Toast(document.getElementById('liveToast'));
-
-        notifySocket.onmessage = function(e) {
-            const data = JSON.parse(e.data);
-            console.log("Notification received:", data); // Debug for stability
-            showNotification(data);
-        };
-
-        function showNotification(data) {
-            // Update UI Counters
-            const mobileBadge = document.getElementById('mobile-notification-badge');
-            if (badge) {
-                badge.classList.remove('d-none');
-                const currentCount = parseInt(badge.innerText.trim()) || 0;
-                badge.innerText = currentCount + 1;
-            }
-            if (mobileBadge) mobileBadge.classList.remove('d-none');
-
-            // Add the new item to the top of the notification dropdown
-            const newItem = document.createElement('li');
-            const notifyId = data.id || Date.now(); // Fallback for live alerts
-            newItem.innerHTML = `
-                <a class="dropdown-item p-3 border-bottom d-flex align-items-center" 
-                   href="${data.link || '#'}" 
-                   onclick="markRead(event, ${notifyId}, '${data.link}')">
-                    <div class="bg-light rounded-circle p-2 me-3"><i class="bi bi-info-circle text-primary"></i></div>
-                    <div>
-                        <div class="small fw-bold text-dark text-wrap">${data.message}</div>
-                        <div class="text-muted smaller">Just now</div>
-                    </div>
-                </a>
-            `;
-            
-            if (itemsContainer) {
-                if (itemsContainer.innerText.includes('No new notifications')) itemsContainer.innerHTML = '';
-                itemsContainer.prepend(newItem);
-            }
-
-            // Trigger the Real-Time Toast (Pop-up)
-            const toastEl = document.getElementById('liveToast');
-            if (toastEl) {
-                document.getElementById('toast-message').innerText = data.message;
-                const tLink = document.getElementById('toast-link');
-                tLink.href = data.link || '#';
-                tLink.setAttribute('onclick', `markRead(event, ${notifyId}, '${data.link}')`);
-                const liveToast = new bootstrap.Toast(toastEl);
-                liveToast.show();
-            }
-        }
-
-        async function markRead(event, id, link) {
-            if (!id || id > 2000000000) return; // Ignore local IDs
-            event.preventDefault();
-            const mobileBadge = document.getElementById('mobile-notification-badge');
-            try {
-                await fetch(`/notifications/read/${id}/`);
-                // Decrement Badge
-                if (badge) {
-                    const count = parseInt(badge.innerText.trim()) || 0;
-                    if (count > 1) {
-                        badge.innerText = count - 1;
-                    } else {
-                        badge.classList.add('d-none');
-                        if (mobileBadge) mobileBadge.classList.add('d-none');
-                    }
-                }
-            } catch (err) { console.error(err); }
-            window.location.href = link;
-        }
-
-        function clearAllNotifications() {
-            if (badge) {
-                badge.innerText = '0';
-                badge.classList.add('d-none');
-            }
-            const mobileBadge = document.getElementById('mobile-notification-badge');
-            if (mobileBadge) mobileBadge.classList.add('d-none');
-            if (itemsContainer) itemsContainer.innerHTML = '<li class="p-4 text-center text-muted small">No new notifications</li>';
-        }
-    </script>
-    {% endif %}
-    {% block scripts %}{% endblock %}
 </body>
 </html>

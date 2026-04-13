@@ -1,178 +1,22 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<div class="row mb-5 mt-3">
-    <!-- Profile Sidebar -->
-    <div class="col-lg-4 mb-4">
-        <div class="card p-4 text-center hover-lift h-100">
-            <div class="position-relative d-inline-block mx-auto mb-4">
-                <img src="{{ user.avatar_url }}" class="rounded-circle shadow" width="140" height="140" style="object-fit:cover; border: 4px solid var(--accent-theme);" alt="Profile Picture">
-                <span class="position-absolute bottom-0 start-100 translate-middle p-2 bg-success border border-light rounded-circle" title="Active Account"></span>
-            </div>
-            <h3 class="fw-bold mb-1">{{ user.first_name }} {{ user.last_name }}</h3>
-            <p class="text-muted mb-3">{{ user.email }}</p>
-            <div class="d-flex justify-content-center gap-2 mb-4">
-                <span class="badge bg-main-theme px-3 py-2 rounded-pill"><i class="bi bi-person-badge"></i> Patient</span>
-                <span class="badge bg-light text-dark border px-3 py-2 rounded-pill"><i class="bi bi-telephone"></i> {{ user.phone_number }}</span>
-            </div>
-            
-            <hr class="text-muted opacity-25">
-            <h6 class="text-start text-muted text-uppercase fw-bold mt-3 mb-3" style="font-size: 0.8rem;">Quick Actions</h6>
-            
-            <div class="d-grid gap-3">
-                <a href="{% url 'auto_diagnose' %}" class="btn btn-main btn-lg fw-bold d-flex align-items-center justify-content-center shadow-sm">
-                    <i class="bi bi-heart-pulse-fill me-2 fs-5 text-accent"></i> AI Auto-Diagnose
-                </a>
-                <a href="{% url 'request_prescription' %}" class="btn btn-outline-primary btn-lg fw-bold d-flex align-items-center justify-content-center shadow-sm" style="border-color: var(--main-theme); color: var(--main-theme);">
-                    <i class="bi bi-file-earmark-medical-fill me-2 fs-5"></i> Request Prescription
-                </a>
-                <a href="{% url 'doctor_directory' %}" class="btn btn-outline-main btn-lg fw-bold d-flex align-items-center justify-content-center shadow-sm mb-2">
-                    <i class="bi bi-people-fill me-2 fs-5"></i> Available Doctors
-                </a>
-                <a href="{% url 'book_appointment' %}" class="btn btn-accent btn-lg fw-bold d-flex align-items-center justify-content-center shadow-sm text-black">
-                    <i class="bi bi-calendar-check-fill me-2 fs-5"></i> Book Appointment
-                </a>
-            </div>
-            
-            <hr class="text-muted opacity-25">
-            <div class="d-grid mt-2">
-                <a href="{% url 'profile' %}" class="btn btn-light border fw-bold text-muted small"><i class="bi bi-gear me-2"></i> Edit Profile</a>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Main Content Area -->
+<!-- FORCE SYNC -->
+<div class="row">
     <div class="col-lg-8">
-        <!-- Diagnoses Section -->
-        <h4 class="theme-header">
-            <i class="bi bi-journal-medical me-2"></i> Recent Assessments
-        </h4>
-        
+        <h4 class="theme-header"><i class="bi bi-journal-medical me-2"></i> Recent Assessments</h4>
         {% if diagnoses %}
             <div class="row g-3 mb-5">
                 {% for d in diagnoses %}
                 <div class="col-md-6">
-                    <div class="card p-3 shadow-sm border-0 border-top border-4 {% if d.malaria_risk == 'High' or d.cholera_risk == 'High' %}border-danger{% elif d.malaria_risk == 'Medium' or d.cholera_risk == 'Medium' %}border-warning{% else %}border-success{% endif %}">
-                        <div class="d-flex justify-content-between mb-2">
-                            <h6 class="mb-0 fw-bold">{{ d.created_at|date:"M d, Y" }}</h6>
-                            <span class="badge {% if d.malaria_risk == 'High' or d.cholera_risk == 'High' %}bg-danger{% elif d.malaria_risk == 'Medium' or d.cholera_risk == 'Medium' %}bg-warning{% else %}bg-success{% endif %} rounded-pill">
-                                {{ d.malaria_risk|default:d.cholera_risk }} Risk
-                            </span>
-                        </div>
-                        <p class="small text-muted mb-2">{{ d.symptoms|truncatechars:80 }}</p>
-                        <div class="mt-auto pt-2 border-top">
-                            <small class="text-main-theme fw-bold">Advice: {{ d.suggested_steps|truncatechars:40 }}</small>
-                        </div>
+                    <div class="card p-3 shadow-sm border-0 border-top border-4 {% if d.malaria_risk == 'High' or d.cholera_risk == 'High' %}border-danger{% else %}border-success{% endif %}">
+                        <h6 class="fw-bold">{{ d.created_at|date:"M d, Y" }}</h6>
+                        <p class="small text-muted">{{ d.symptoms|truncatechars:80 }}</p>
                     </div>
                 </div>
                 {% endfor %}
             </div>
         {% else %}
-            <div class="card p-4 text-center mb-5">
-                <p class="text-muted mb-0">No health assessments yet.</p>
-            </div>
-        {% endif %}
-        
-        <!-- Prescriptions Section -->
-        <h4 class="theme-header mt-5">
-            <i class="bi bi-file-earmark-text-fill me-2"></i> Prescriptions
-        </h4>
-        
-        {% if prescription_requests %}
-            <div class="list-group">
-                {% for req in prescription_requests %}
-                <div class="list-group-item p-3 mb-3 border rounded shadow-sm">
-                    <div class="d-flex w-100 justify-content-between align-items-center mb-3">
-                        <h6 class="mb-0 fw-bold">Request #{{ req.id }}</h6>
-                        <span class="badge {% if req.status == 'reviewed' %}bg-success{% else %}bg-warning{% endif %} rounded-pill">{{ req.get_status_display }}</span>
-                    </div>
-
-                    <p class="mb-3 text-secondary small">"{{ req.patient_notes }}"</p>
-                    
-                    {% if req.lab_report %}
-                    <div class="mb-3">
-                        <a href="{{ req.lab_report.url }}" target="_blank" class="btn btn-sm btn-outline-success">
-                            View Lab Report
-                        </a>
-                    </div>
-                    {% endif %}
-                    
-                    {% if req.status == 'reviewed' %}
-                        <div class="mt-4 p-0 border-0 shadow-sm rounded-4 overflow-hidden bg-white border border-light">
-                            <div class="bg-light p-3 border-bottom d-flex justify-content-between align-items-center">
-                                <span class="fw-bold text-main-theme small"><i class="bi bi-file-earmark-medical-fill me-2"></i> OFFICIAL DIGITAL PRESCRIPTION</span>
-                                <span class="badge bg-success rounded-pill px-3">VERIFIED</span>
-                            </div>
-                            <div class="p-4">
-                                <div class="row mb-3">
-                                    <div class="col-sm-6">
-                                        <small class="text-muted d-block text-uppercase smallest fw-bold mb-1">Prescribing Doctor</small>
-                                        <div class="fw-bold text-dark">Dr. {{ req.doctor.last_name }}</div>
-                                    </div>
-                                    <div class="col-sm-6 text-sm-end mt-2 mt-sm-0">
-                                        <small class="text-muted d-block text-uppercase smallest fw-bold mb-1">Date Issued</small>
-                                        <div class="fw-bold text-dark">{{ req.updated_at|date:"M d, Y" }}</div>
-                                    </div>
-                                </div>
-                                <div class="bg-medical-bg p-3 rounded-3 border-dashed border-2 mb-3">
-                                    <small class="text-muted d-block text-uppercase smallest fw-bold mb-2">Medication & Instructions</small>
-                                    <div class="text-dark fw-medium" style="white-space: pre-wrap;">{{ req.doctor_comments }}</div>
-                                </div>
-                                <div class="text-center">
-                                    <button onclick="window.print()" class="btn btn-sm btn-outline-secondary rounded-pill px-4">
-                                        <i class="bi bi-printer me-1"></i> Print for Pharmacy
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    {% endif %}
-                </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="card p-5 text-center bg-transparent border-2 border-dashed border-secondary shadow-none">
-                <i class="bi bi-capsule text-muted mb-3" style="font-size: 3rem;"></i>
-                <h5 class="text-muted">No Prescriptions Requested</h5>
-            </div>
-        {% endif %}
-        
-        <!-- Appointments Section -->
-        <h4 class="theme-header mt-5 d-flex align-items-center">
-            <span class="dashboard-stat-icon me-3"><i class="bi bi-calendar2-check-fill"></i></span>
-            My Appointments
-        </h4>
-        
-        {% if appointments %}
-            <div class="row g-3 mb-5">
-                {% for appt in appointments %}
-                <div class="col-md-6">
-                    <div class="card p-3 border-0 shadow-sm rounded-4 h-100 position-relative border-top border-4 {% if appt.status == 'confirmed' %}border-success{% elif appt.status == 'pending' %}border-warning{% else %}border-secondary{% endif %}">
-                        <div class="d-flex align-items-center mb-3">
-                            <img src="{{ appt.doctor.avatar_url }}" class="rounded-circle me-2 shadow-sm" width="40" height="40" style="object-fit:cover;">
-                            <div>
-                                <h6 class="mb-0 fw-bold small">Dr. {{ appt.doctor.last_name }}</h6>
-                                <span class="badge rounded-pill {% if appt.status == 'confirmed' %}bg-success{% elif appt.status == 'pending' %}bg-warning text-dark{% else %}bg-secondary{% endif %} px-2 py-1" style="font-size: 0.6rem;">{{ appt.get_status_display }}</span>
-                            </div>
-                        </div>
-                        <h6 class="fw-bold mb-1 text-dark"><i class="bi bi-clock me-1"></i> {{ appt.scheduled_time|date:"M d @ H:i" }}</h6>
-                        <p class="small text-muted mb-3">{{ appt.notes|default:"No notes provided."|truncatechars:100 }}</p>
-                        
-                        {% if appt.status == 'confirmed' %}
-                        <div class="mt-auto d-grid">
-                            <a href="{% url 'chat_room' appt.doctor.id %}" class="btn btn-sm btn-main rounded-pill">
-                                <i class="bi bi-chat-dots-fill me-1"></i> Join Consultation
-                            </a>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="card p-5 text-center mb-5 border-dashed bg-transparent border-2 border-secondary shadow-none">
-                <i class="bi bi-calendar-x text-muted mb-3" style="font-size: 3rem;"></i>
-                <h5 class="text-muted">No Scheduled Appointments</h5>
-            </div>
+            <div class="card p-4 text-center"><p class="text-muted">No assessments yet.</p></div>
         {% endif %}
     </div>
 </div>
