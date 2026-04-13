@@ -1,44 +1,48 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row justify-content-center mt-5">
-    <div class="col-lg-6">
-        <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
-            <div class="card-header bg-accent text-white p-4 text-center">
-                <div class="mb-2"><i class="bi bi-file-earmark-medical-fill fs-1"></i></div>
-                <h3 class="mb-0 fw-bold">Upload Laboratory Report</h3>
-                <p class="mb-0 text-white-50">Upload your test results for doctor review</p>
-            </div>
-            <div class="card-body p-5">
-                <form method="POST" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <div class="mb-4">
-                        <label for="title" class="form-label fw-bold small text-uppercase text-muted">Report Title</label>
-                        <input type="text" class="form-control form-control-lg shadow-sm" id="title" name="title" placeholder="e.g., Malaria Test Results - April 2026" required>
+<div class="container py-4 animate-fade-in">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <!-- Bicolor TeleMD Card (Navy Header / White Body) -->
+            <div class="telemd-card p-0 border-0 shadow-lg overflow-hidden" style="border-radius: 2rem;">
+                
+                <!-- Navy Header Section -->
+                <div class="bg-telemd-navy py-5 text-center text-white">
+                    <div class="mb-3 d-inline-block">
+                        <i class="bi bi-file-earmark-medical fs-1"></i>
                     </div>
-                    
-                    <div class="mb-4">
-                        <label for="file" class="form-label fw-bold small text-uppercase text-muted">Laboratory File (PDF or Image)</label>
-                        <div class="input-group shadow-sm">
-                            <input type="file" class="form-control form-control-lg" id="file" name="file" required>
+                    <h2 class="fw-bold mb-0">Lab Report Upload</h2>
+                    <p class="text-white-50 small mt-2">Securely transmit your clinical documents.</p>
+                </div>
+                
+                <!-- White Body Section -->
+                <div class="p-5 bg-white">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-4 text-center p-5 border-2 border-dashed border-light rounded-4 bg-light mb-5">
+                            <i class="bi bi-cloud-arrow-up fs-1 text-muted opacity-50 mb-3 d-block"></i>
+                            <label for="report" class="btn btn-outline-dark fw-bold rounded-pill px-4">Choose File</label>
+                            <input type="file" id="report" name="report_file" class="d-none" required>
+                            <p class="text-muted small mt-3 mb-0">PDF, JPG, or PNG (Max 10MB)</p>
                         </div>
-                        <div class="form-text mt-2"><i class="bi bi-info-circle me-1"></i> Supported formats: PDF, JPG, PNG. Max size: 10MB.</div>
-                    </div>
 
-                    <div class="mb-5">
-                        <label for="description" class="form-label fw-bold small text-uppercase text-muted">Description (Optional)</label>
-                        <textarea class="form-control shadow-sm" id="description" name="description" rows="3" placeholder="Provide any additional context or notes from the laboratory..."></textarea>
-                    </div>
-                    
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-main btn-lg fw-bold py-3 shadow">
-                            <i class="bi bi-cloud-arrow-up me-2"></i> Submit Laboratory Report
+                        <div class="p-3 fs-7 rounded-3 d-flex align-items-center mb-5" style="background: rgba(0, 166, 140, 0.05); color: var(--telemd-teal); border: 1px solid rgba(0, 166, 140, 0.1);">
+                            <i class="bi bi-shield-lock-fill me-2 fs-5"></i>
+                            <div class="small fw-bold">Encrypted Clinical Transmission Active</div>
+                        </div>
+
+                        <button type="submit" class="btn btn-telemd-navy w-100 py-3 shadow-sm d-flex align-items-center justify-content-center">
+                            <i class="bi bi-upload me-2"></i> Start Secure Upload
                         </button>
-                        <a href="{% url 'patient_dashboard' %}" class="btn btn-link text-muted">Cancel and Go Back</a>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .border-dashed { border-style: dashed !important; }
+</style>
 {% endblock %}

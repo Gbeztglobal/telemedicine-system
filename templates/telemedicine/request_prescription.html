@@ -1,30 +1,37 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row justify-content-center mt-4">
-    <div class="col-md-8">
-        <div class="card p-4">
-            <h3 class="theme-header text-center"><i class="bi bi-file-medical"></i> Request Prescription</h3>
-            <p class="text-muted text-center">Describe the medication you need or the symptoms you are targeting.</p>
-            
-            <form method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="mb-4">
-                    <label class="form-label fw-bold">Prescription Details / Need <span class="text-danger">*</span></label>
-                    <textarea class="form-control" name="patient_notes" rows="4" required placeholder="Describe what medication you need..."></textarea>
-                </div>
-
-                <div class="mb-4 p-3 bg-light border-dashed rounded-3 text-center">
-                    <label class="form-label d-block fw-bold"><i class="bi bi-cloud-upload me-2 text-main-theme"></i> Attachment (Optional)</label>
-                    <p class="small text-muted mb-3">Upload your lab report or clinical document (PDF/Image)</p>
-                    <input type="file" class="form-control shadow-none" name="lab_report" accept="image/*,.pdf">
+<div class="container py-4 animate-fade-in">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <!-- Bicolor TeleMD Card (Navy Header / White Body) -->
+            <div class="telemd-card p-0 border-0 shadow-lg overflow-hidden" style="border-radius: 2rem;">
+                
+                <!-- Navy Header Section -->
+                <div class="bg-telemd-navy py-5 text-center text-white">
+                    <div class="mb-3 d-inline-block">
+                        <i class="bi bi-capsule fs-1"></i>
+                    </div>
+                    <h2 class="fw-bold mb-0">Prescription Request</h2>
+                    <p class="text-white-50 small mt-2">Submit clinical symptoms for physician review.</p>
                 </div>
                 
-                <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-main fw-bold"><i class="bi bi-send-fill"></i> Send Request to Health Worker</button>
-                    <a href="{% url 'patient_dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+                <!-- White Body Section -->
+                <div class="p-5 bg-white">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-5 text-start">
+                            <label class="form-label small fw-bold text-uppercase ms-1" style="color: #64748b; letter-spacing: 0.05em;">Current Symptoms <span class="text-danger">*</span></label>
+                            <textarea name="symptoms" class="form-control rounded-4 bg-light border-0 p-3 shadow-none mt-2" 
+                                      rows="5" required placeholder="Describe what you are currently feeling..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-telemd-navy w-100 py-3 shadow-sm d-flex align-items-center justify-content-center">
+                            <i class="bi bi-send-check-fill me-2"></i> Submit to Physician
+                        </button>
+                    </form>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
