@@ -3,10 +3,13 @@
 {% block content %}
 <div class="row justify-content-center mt-4">
     <div class="col-lg-10 col-xl-9">
-        <div class="card p-0 border-0 shadow-lg rounded-4 overflow-hidden">
-            <div class="bg-main-theme p-4 text-center text-white">
-                <div class="mb-2"><i class="bi bi-robot fs-1"></i></div>
-                <h3 class="fw-bold">AI Diagnosis Engine</h3>
+        <div class="telemd-card p-0 overflow-hidden border-0 shadow-lg">
+            <!-- TeleMD Navy Header -->
+            <div class="bg-telemd-navy p-5 text-center text-white">
+                <div class="mb-3 d-inline-block p-4 rounded-circle" style="background: rgba(255, 255, 255, 0.05);">
+                    <i class="bi bi-robot fs-1"></i>
+                </div>
+                <h2 class="fw-bold mb-1">AI Diagnosis Engine</h2>
                 <p class="text-white-50 mb-0">Anatomical Triage & Risk Evaluation</p>
             </div>
             
@@ -14,9 +17,8 @@
                 <div class="row g-5">
                     <!-- Anatomical Map Col -->
                     <div class="col-md-5 text-center border-md-end">
-                        <h6 class="fw-bold text-muted text-uppercase mb-4 smaller">Tap Pain Areas</h6>
+                        <h6 class="fw-bold text-muted text-uppercase mb-4 smaller ls-wide">1. Tap Pain Areas</h6>
                         <div class="body-map-container mx-auto mb-4" style="max-width: 200px;">
-                            <!-- Simple Stylized SVG Silhouette -->
                             <svg viewBox="0 0 100 200" class="w-100 h-auto body-svg">
                                 <path class="body-part" id="part-head" d="M50,10c5,0,10,5,10,12s-5,12-10,12s-10-5-10-12s5-12,10-12" data-symptom="Severe Headache, Fever" />
                                 <path class="body-part" id="part-chest" d="M35,38h30l5,40h-40l5-40" data-symptom="Fatigue, Body Pain" />
@@ -24,7 +26,7 @@
                                 <path class="body-part" id="part-joints" d="M30,40l-15,40m55-40l15,40M35,110l-5,70m40-70l5,70" data-symptom="Joint Pain, Muscle Weakness" />
                             </svg>
                         </div>
-                        <p class="smallest text-muted italic">Click parts of the silhouette to instantly trigger clinical triage suggestions.</p>
+                        <p class="smallest text-muted italic">Clinical triage is suggesting based on anatomical selection.</p>
                     </div>
 
                     <!-- Input Col -->
@@ -33,12 +35,12 @@
                             {% csrf_token %}
                             
                             <div class="mb-4">
-                                <label class="form-label fw-bold text-dark d-flex align-items-center">
-                                    <i class="bi bi-person-lines-fill me-2 text-main-theme"></i> 
-                                    Symptom Breakdown
+                                <label class="form-label fw-bold text-dark d-flex align-items-center small text-uppercase ls-wide mb-3">
+                                    <i class="bi bi-person-lines-fill me-2" style="color: var(--telemd-navy);"></i> 
+                                    2. Symptom Breakdown
                                 </label>
                                 
-                                <div id="symptom-badges" class="d-flex flex-wrap gap-2 mb-3">
+                                <div id="symptom-badges" class="d-flex flex-wrap gap-2 mb-4">
                                     <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill symptom-chip" data-symptom="Severe Fever">Fever</button>
                                     <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill symptom-chip" data-symptom="Severe Headache">Headache</button>
                                     <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill symptom-chip" data-symptom="Severe Diarrhea">Diarrhea</button>
@@ -46,27 +48,19 @@
                                     <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill symptom-chip" data-symptom="Body Pain">Body Pain</button>
                                 </div>
 
-                                <textarea id="symptomsField" class="form-control rounded-4 bg-light border-0 p-3 shadow-none mt-2" name="symptoms" rows="4" required placeholder="Describe your condition here..."></textarea>
-                            </div>
-                            
-                            <div class="mb-5">
-                                <label class="form-label fw-bold text-dark d-flex align-items-center">
-                                    <i class="bi bi-capsule me-2 text-accent"></i> 
-                                    Ongoing Meds (Optional)
-                                </label>
-                                <input type="text" class="form-control rounded-pill bg-light border-0 px-4 py-2 shadow-none" name="prescriptions" placeholder="e.g. Paracetamol...">
+                                <textarea id="symptomsField" class="form-control rounded-4 bg-light border-0 p-4 shadow-none mt-2" name="symptoms" rows="4" required placeholder="Describe your condition here..."></textarea>
                             </div>
                             
                             <div id="loadingState" class="text-center d-none py-4">
-                                <div class="spinner-border text-main-theme mb-3" role="status"></div>
-                                <h6 class="fw-bold text-main-theme animate-pulse">Running Clinical AI Engine...</h6>
+                                <div class="spinner-border mb-3" style="color: var(--telemd-teal);" role="status"></div>
+                                <h6 class="fw-bold" style="color: var(--telemd-navy);">Executing Clinical Analysis...</h6>
                             </div>
 
                             <div id="actionButtons" class="d-grid gap-3">
-                                <button type="submit" class="btn btn-main btn-lg fw-bold rounded-pill shadow-lg py-3">
-                                    <i class="bi bi-shield-check me-2"></i> Execute Evaluation
+                                <button type="submit" class="btn btn-telemd-navy btn-lg fw-bold py-3 shadow-lg">
+                                    <i class="bi bi-shield-check me-2"></i> Run AI Evaluation
                                 </button>
-                                <a href="{% url 'dashboard' %}" class="btn btn-link text-muted fw-bold btn-sm">Return</a>
+                                <a href="{% url 'dashboard' %}" class="btn btn-link text-muted fw-bold btn-sm text-decoration-none">Cancel and Return</a>
                             </div>
                         </form>
                     </div>
@@ -78,17 +72,12 @@
 
 <style>
     .body-part { fill: #e2e8f0; stroke: #cbd5e1; stroke-width: 1; cursor: pointer; transition: all 0.3s; }
-    .body-part:hover { fill: var(--main-theme) !important; opacity: 0.6; }
-    .body-part.active { fill: var(--main-theme) !important; filter: drop-shadow(0 0 5px var(--main-theme)); stroke: white; }
+    .body-part:hover { fill: var(--telemd-teal) !important; opacity: 0.8; }
+    .body-part.active { fill: var(--telemd-teal) !important; filter: drop-shadow(0 0 5px var(--telemd-teal)); stroke: white; }
     
-    .symptom-chip { transition: all 0.2s; font-size: 0.75rem; font-weight: 600; }
-    .symptom-chip.active { background-color: var(--accent-theme) !important; color: black !important; border-color: var(--accent-theme); }
-    .animate-pulse { animation: pulse 1.5s infinite; }
-    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-    
-    @media (max-width: 767px) {
-        .border-md-end { border-bottom: 1px solid #dee2e6; margin-bottom: 2rem; padding-bottom: 2rem; }
-    }
+    .symptom-chip { transition: all 0.2s; font-size: 0.75rem; font-weight: 600; border-color: #e2e8f0; color: #64748b; }
+    .symptom-chip.active { background-color: var(--telemd-navy) !important; color: white !important; border-color: var(--telemd-navy); }
+    .ls-wide { letter-spacing: 0.05em; }
 </style>
 
 <script>
@@ -96,13 +85,10 @@
     const chips = document.querySelectorAll('.symptom-chip');
     const parts = document.querySelectorAll('.body-part');
 
-    // Handle Body Part Selection
     parts.forEach(part => {
         part.addEventListener('click', function() {
             this.classList.toggle('active');
             const dataSymptom = this.dataset.symptom;
-            
-            // Auto-activate chips matching the part's data-symptom
             chips.forEach(chip => {
                 if (dataSymptom.includes(chip.innerText)) {
                     if (this.classList.contains('active')) {
@@ -113,27 +99,19 @@
         });
     });
 
-    // Handle Symptom Chips
     chips.forEach(chip => {
         chip.addEventListener('click', function() {
             this.classList.toggle('active');
             const val = this.dataset.symptom;
-            
             if (this.classList.contains('active')) {
                 const currentVal = field.value.trim();
                 field.value = (currentVal ? currentVal + ', ' : '') + val;
             } else {
-                field.value = field.value
-                    .replace(val, '')
-                    .replace(/,\s*,/, ',')
-                    .replace(/^,\s*/, '')
-                    .replace(/,\s*$/, '')
-                    .trim();
+                field.value = field.value.replace(val, '').replace(/,\s*,/, ',').replace(/^,\s*/, '').replace(/,\s*$/, '').trim();
             }
         });
     });
 
-    // Handle Loading State
     document.getElementById('diagnosisForm').onsubmit = function() {
         document.getElementById('actionButtons').classList.add('d-none');
         document.getElementById('loadingState').classList.remove('d-none');

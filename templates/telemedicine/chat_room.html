@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <!-- Chat Header (Match screenshot 4) -->
+            <div class="telemd-card mb-3 py-3 px-4 d-flex align-items-center justify-content-between border-0 shadow-sm" style="border-radius: 1rem;">
+                <div class="d-flex align-items-center">
+                    <button onclick="window.history.back()" class="btn btn-link text-muted me-3 p-0"><i class="bi bi-chevron-left fs-4"></i></button>
+                    <div class="position-relative me-3">
+                        <img src="{{ other_user.avatar_url }}" class="rounded-circle border border-2 border-white shadow-sm" width="50" height="50" style="object-fit:cover;">
+                        <span class="position-absolute bottom-0 end-0 bg-success border border-white rounded-circle" style="width: 12px; height: 12px;"></span>
+                    </div>
+                    <div>
+                        <h5 class="mb-0 fw-bold">{{ other_user.get_full_name|upper }}</h5>
+                        <small class="text-muted d-flex align-items-center">
+                            <i class="bi bi-patch-check-fill me-1" style="color: var(--telemd-navy);"></i>
+                            {{ other_user.get_role_display|default:"Doctor (Health Worker)" }}
+                        </small>
+                    </div>
+                </div>
+                <a href="{% url 'video_call' other_user.id %}" class="btn btn-telemd-teal px-4 py-2 fw-bold rounded-pill shadow-sm">
+                    <i class="bi bi-camera-video-fill me-2"></i> Video Call
+                </a>
+            </div>
+
+            <!-- Chat Room Area -->
+            <div class="telemd-card border-0 shadow-sm p-0 overflow-hidden" style="height: 65vh; border-radius: 1.5rem;">
+                <div id="chatMessages" class="p-4 overflow-y-auto d-flex flex-column gap-3" style="height: 100%; background: #f8fafc;">
+                    
+                    <!-- Example Incoming (Match screenshot) -->
+                    <div class="d-flex align-items-start gap-2">
+                        <img src="{{ other_user.avatar_url }}" class="rounded-circle" width="32" height="32">
+                        <div class="chat-bubble chat-incoming shadow-sm">
+                            <p class="mb-0 fw-semibold">Im fine dear</p>
+                            <small class="text-muted x-small d-block text-end mt-1">18:57</small>
+                        </div>
+                    </div>
+
+                    <!-- Example Outgoing (Match screenshot) -->
+                    <div class="d-flex flex-column align-items-end mb-4">
+                        <div class="chat-bubble chat-outgoing shadow-sm">
+                            <p class="mb-0 fw-semibold">how are u sir</p>
+                            <small class="text-muted x-small d-block text-end mt-1">18:53</small>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Messages -->
+                    {% for message in chat_messages %}
+                        <div class="d-flex {% if message.sender == user %}justify-content-end{% else %}align-items-start gap-2{% endif %}">
+                            {% if message.sender != user %}
+                                <img src="{{ message.sender.avatar_url }}" class="rounded-circle" width="32" height="32">
+                            {% endif %}
+                            <div class="chat-bubble {% if message.sender == user %}chat-outgoing{% else %}chat-incoming{% endif %} shadow-sm">
+                                <p class="mb-0 fw-semibold">{{ message.content }}</p>
+                                <small class="text-muted x-small d-block text-end mt-1">{{ message.created_at|time:"H:i" }}</small>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Input Area (Match screenshot toolbar) -->
+                <div class="p-3 bg-white border-top">
+                    <form id="chatForm" class="d-flex align-items-center gap-3">
+                        <button type="button" class="btn btn-link text-muted p-0"><i class="bi bi-emoji-smile fs-4"></i></button>
+                        <button type="button" class="btn btn-link text-muted p-0"><i class="bi bi-mic fs-4"></i></button>
+                        <input type="text" id="chatInput" placeholder="Type your message..." 
+                               class="form-control border-0 bg-light py-3 px-4 shadow-none" 
+                               style="border-radius: 1.25rem;">
+                        <button type="submit" class="btn btn-telemd-navy rounded-circle d-flex align-items-center justify-content-center shadow" 
+                                style="width: 50px; height: 50px;">
+                            <i class="bi bi-send-fill"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .x-small { font-size: 0.7rem; }
+</style>
+{% endblock %}

@@ -1,52 +1,122 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<!-- ABSOLUTE FORCE RESTORE V3 -->
-<div class="row mt-4">
-    <div class="col-lg-4 mb-4">
-        <div class="card p-4 text-center">
-            <img src="{{ user.avatar_url }}" class="rounded-circle mx-auto mb-3" width="120" height="120" style="object-fit:cover; border: 3px solid #198754;">
-            <h4>Dr. {{ user.last_name }}</h4>
-            <p class="text-muted small">{{ user.email }}</p>
-            <a href="{% url 'profile' %}" class="btn btn-sm btn-outline-secondary">Edit Profile</a>
+<div class="container py-2">
+    <div class="row g-4">
+        <!-- Sidebar Profile (Mirroring Patient Dashboard style) -->
+        <div class="col-lg-4 col-md-5">
+            <div class="telemd-card text-center mb-4">
+                <div class="profile-avatar-container mb-3">
+                    <img src="{{ user.avatar_url }}" class="rounded-circle shadow-sm border border-4 border-white" width="120" height="120" style="object-fit:cover;">
+                    <span class="status-dot"></span>
+                </div>
+                
+                <h3 class="fw-bold mb-1">Dr. {{ user.last_name }}</h3>
+                <p class="text-muted small mb-3">Health Specialist • Verified Provider</p>
+                
+                <div class="d-flex justify-content-center mb-4">
+                    <span class="badge rounded-pill bg-success-subtle text-success border border-success px-3 py-2 fw-semibold">
+                        <i class="bi bi-patch-check-fill me-1"></i> Available for Consult
+                    </span>
+                </div>
+
+                <div class="text-start mt-4 pt-3 border-top">
+                    <h6 class="text-muted small fw-bold mb-3 ls-wide text-uppercase">Doctor HUD</h6>
+                    <div class="list-group list-group-flush gap-2">
+                        <div class="d-flex justify-content-between align-items-center p-2 rounded-3 bg-light">
+                            <span class="small text-muted">Today's Appointments</span>
+                            <span class="badge bg-telemd-navy rounded-pill">0</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center p-2 rounded-3 bg-light">
+                            <span class="small text-muted">Active Cases</span>
+                            <span class="badge bg-telemd-teal rounded-pill">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Magic AI Summary Tool -->
+            <div class="telemd-card bg-telemd-navy text-white border-0 overflow-hidden position-relative">
+                <i class="bi bi-stars position-absolute opacity-25" style="right: -10px; bottom: -10px; font-size: 80px;"></i>
+                <h5 class="fw-bold mb-3 d-flex align-items-center">
+                    <i class="bi bi-magic me-2"></i> AI Magic Summary
+                </h5>
+                <p class="small opacity-75 mb-0">Generate instant case summaries for clinical notation.</p>
+                <button class="btn btn-telemd-teal w-100 mt-4 fw-bold">Open Summarizer</button>
+            </div>
         </div>
-    </div>
-    <div class="col-lg-8">
-        <h4 class="text-success mb-4 font-weight-bold">Patient Directory</h4>
-        <div class="card shadow-sm border-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light">
-                        <tr>
-                            <th class="px-4">Patient Name</th>
-                            <th>Status</th>
-                            <th>Contact</th>
-                            <th class="text-end px-4">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for patient in patients %}
-                        <tr>
-                            <td class="px-4">
-                                <span class="fw-bold text-dark">{{ patient.first_name }} {{ patient.last_name }}</span>
-                            </td>
-                            <td>
-                                {% if patient.latest_diagnosis %}
-                                <span class="badge bg-success">Stable</span>
-                                {% else %}
-                                <span class="badge bg-secondary">New</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ patient.phone_number }}</td>
-                            <td class="text-end px-4">
-                                <a href="{% url 'patient_record_detail' patient.id %}" class="btn btn-sm btn-outline-success">Record</a>
-                                <a href="{% url 'chat_room' patient.id %}" class="btn btn-sm btn-success ms-1">Chat</a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+
+        <!-- Main Content -->
+        <div class="col-lg-8 col-md-7">
+            <!-- Patient Directory Card -->
+            <div class="telemd-card mb-4 min-vh-50">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div class="d-flex align-items-center">
+                        <div class="p-2 rounded-3 me-3" style="background: rgba(0, 166, 140, 0.1); color: var(--telemd-teal);">
+                            <i class="bi bi-people-fill fs-4"></i>
+                        </div>
+                        <h4 class="mb-0 fw-bold">Patient Directory</h4>
+                    </div>
+                    <div class="input-group w-auto">
+                        <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control bg-light border-0 small" placeholder="Search patients...">
+                    </div>
+                </div>
+
+                {% if appointments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle border-0">
+                            <thead>
+                                <tr class="bg-light">
+                                    <th class="border-0 text-muted small px-4 py-3">Patient</th>
+                                    <th class="border-0 text-muted small px-4 py-3">Schedule</th>
+                                    <th class="border-0 text-muted small px-4 py-3">Status</th>
+                                    <th class="border-0 px-4 py-3 text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in appointments %}
+                                <tr>
+                                    <td class="px-4 py-3">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <img src="{{ appointment.patient.avatar_url }}" class="rounded-circle shadow-sm" width="40" height="40" style="object-fit:cover;">
+                                            <div>
+                                                <div class="fw-bold text-dark">{{ appointment.patient.get_full_name }}</div>
+                                                <div class="text-muted x-small">PID: #{{ appointment.patient.id }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 fw-semibold text-muted small">{{ appointment.scheduled_at|date:"f A" }}</td>
+                                    <td class="px-4 py-3">
+                                        <span class="badge bg-success-subtle text-success rounded-pill px-3">Active</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-end">
+                                        <a href="{% url 'chat_room' appointment.patient.id %}" class="btn btn-telemd-navy btn-sm px-4 rounded-pill">
+                                            Consult
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <div class="mb-3 opacity-25">
+                            <i class="bi bi-journals fs-1"></i>
+                        </div>
+                        <h5 class="fw-bold text-muted mb-0">No Consultation History</h5>
+                        <p class="text-muted small">Assigned patient sessions will appear here.</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .ls-wide { letter-spacing: 0.05em; }
+    .x-small { font-size: 0.75rem; }
+    .min-vh-50 { min-height: 50vh; }
+</style>
 {% endblock %}

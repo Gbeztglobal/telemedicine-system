@@ -1,76 +1,61 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row justify-content-center mt-5">
-    <div class="col-lg-8">
-        <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
-            <div class="card-header bg-main-theme text-dark p-4">
-                <h3 class="mb-0 fw-bold"><i class="bi bi-calendar-plus me-2"></i> Book an Appointment</h3>
-                <p class="mb-0 text-secondary">Select a specialist and choose your preferred time.</p>
-            </div>
-            <div class="card-body p-5">
-                <form method="POST">
-                    {% csrf_token %}
-                    
-                    <h5 class="fw-bold mb-4 text-dark border-bottom pb-2">1. Choose Your Doctor</h5>
-                    <div class="row g-4 mb-5">
-                        {% for doctor in doctors %}
-                        <div class="col-md-6">
-                            <input type="radio" class="btn-check" name="doctor_id" id="doctor_{{ doctor.id }}" value="{{ doctor.id }}" required>
-                            <label class="btn btn-outline-light d-flex flex-column align-items-center p-4 h-100 w-100 text-dark border-2 rounded-4 hover-lift doctor-card-label" for="doctor_{{ doctor.id }}">
-                                <img src="{{ doctor.avatar_url }}" class="rounded-circle mb-3 shadow" width="80" height="80" style="object-fit:cover;">
-                                <h6 class="fw-bold mb-1">Dr. {{ doctor.last_name }}</h6>
-                                <p class="small text-muted mb-0"><i class="bi bi-star-fill text-warning"></i> General Health Worker</p>
-                                <span class="badge bg-light text-success border border-success-subtle mt-2">Available</span>
-                            </label>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    
-                    <h5 class="fw-bold mb-4 text-dark border-bottom pb-2">2. Schedule and Notes</h5>
-                    <div class="mb-4">
-                        <label for="scheduled_time" class="form-label fw-bold text-muted">Preferred Date & Time</label>
-                        <div class="input-group input-group-lg shadow-sm">
-                            <span class="input-group-text bg-white border-end-0"><i class="bi bi-clock"></i></span>
-                            <input type="datetime-local" class="form-control border-start-0" id="scheduled_time" name="scheduled_time" required>
-                        </div>
-                        <div class="form-text mt-2"><i class="bi bi-info-circle me-1"></i> Appointments are currently subject to manual confirmation by the doctor.</div>
-                    </div>
-                    
-                    <div class="mb-5">
-                        <label for="notes" class="form-label fw-bold text-muted">Briefly explain your concern</label>
-                        <textarea class="form-control form-control-lg shadow-sm" id="notes" name="notes" rows="4" placeholder="How can the doctor help you today?"></textarea>
-                    </div>
-                    
-                    <div class="d-grid gap-3">
-                        <button type="submit" class="btn btn-main btn-lg fw-bold py-3 shadow">
-                            <i class="bi bi-check2-circle me-2"></i> Request Appointment
-                        </button>
-                        <a href="{% url 'patient_dashboard' %}" class="btn btn-outline-secondary btn-lg border-0 fw-bold">Cancel</a>
-                    </div>
-                </form>
+<div class="container py-2">
+    <!-- Header Card -->
+    <div class="telemd-card mb-5 p-5 text-start overflow-hidden position-relative border-0 shadow-sm" style="background: linear-gradient(135deg, white 0%, #f8fafc 100%);">
+        <i class="bi bi-calendar-check position-absolute opacity-10" style="font-size: 150px; right: 20px; top: -20px; color: var(--telemd-navy);"></i>
+        <div class="position-relative">
+            <h1 class="fw-bold mb-2 d-flex align-items-center" style="color: var(--telemd-navy); letter-spacing: -0.01em;">
+                <i class="bi bi-calendar-plus me-3 opacity-25"></i> Book an Appointment
+            </h1>
+            <p class="text-muted fs-5 mb-0">Select a specialist and choose your preferred time.</p>
+        </div>
+    </div>
+
+    <!-- Selection Step Header (Match screenshot 2) -->
+    <div class="mb-4 pt-2">
+        <h4 class="fw-bold d-flex align-items-center">
+            <span class="bg-telemd-navy text-white rounded-pill px-3 py-1 me-3 fs-6">1.</span>
+            Choose Your Doctor
+        </h4>
+        <hr class="mt-4 opacity-10">
+    </div>
+
+    <!-- Doctor Grid -->
+    <div class="row g-4">
+        {% for doctor in doctors %}
+        <div class="col-lg-3 col-md-4 col-sm-6">
+            <div class="telemd-card text-center p-4 h-100 hover-lift border-0 shadow-sm">
+                <div class="mb-3 position-relative d-inline-block">
+                    <img src="{{ doctor.avatar_url }}" class="rounded-circle border border-4 border-light shadow-sm" 
+                         width="100" height="100" style="object-fit:cover;">
+                </div>
+                
+                <h5 class="fw-bold mb-1">{{ doctor.get_full_name }}</h5>
+                <p class="text-muted small mb-2">{{ doctor.get_role_display|default:"General Health Worker" }}</p>
+                
+                <!-- Rating Stars (Match screenshot) -->
+                <div class="mb-4" style="color: #fbbf24;">
+                    <i class="bi bi-star-fill small"></i>
+                    <i class="bi bi-star-fill small"></i>
+                    <i class="bi bi-star-fill small"></i>
+                    <i class="bi bi-star-fill small"></i>
+                    <i class="bi bi-star-fill small opacity-50"></i>
+                </div>
+
+                <a href="{% url 'book_appointment_with' doctor.id %}" class="btn btn-outline-success fw-bold rounded-pill px-4 w-100 py-1 small" 
+                   style="color: var(--telemd-teal); border-color: rgba(0, 166, 140, 0.4); font-size: 0.85rem;">
+                   Available
+                </a>
             </div>
         </div>
+        {% endfor %}
     </div>
 </div>
 
 <style>
-    .doctor-card-label {
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        border: 2px solid #f8f9fa !important;
-        background: #f8f9fa;
-    }
-    .btn-check:checked + .doctor-card-label {
-        border-color: var(--main-theme) !important;
-        background: white !important;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
-    }
-    .btn-check:checked + .doctor-card-label h6 {
-        color: var(--main-theme);
-    }
-    .doctor-card-label:hover {
-        background: white;
-        border-color: #dee2e6 !important;
-    }
+    .hover-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .hover-lift:hover { transform: translateY(-5px); box-shadow: 0 15px 30px -10px rgba(0,0,0,0.1) !important; }
 </style>
 {% endblock %}

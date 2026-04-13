@@ -1,52 +1,43 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row justify-content-center mt-5">
-    <div class="col-md-5">
-        <div class="card shadow border-0 rounded-4 overflow-hidden">
-            <div class="card-header text-white text-center p-4" style="background: var(--main-theme) !important;">
-                <div class="mb-2"><i class="bi bi-shield-lock-fill fs-1"></i></div>
-                <h3 class="fw-bold mb-0">Secure Login</h3>
-            </div>
-            <div class="card-body p-4 p-md-5">
-                <form method="POST">
-                    {% csrf_token %}
-                    {% for field in form %}
-                    <div class="mb-4">
-                        <label class="form-label fw-bold small text-muted text-uppercase">{{ field.label }}</label>
-                        {{ field }}
-                        {% if field.errors %}
-                        <div class="text-danger small mt-1">
-                            {{ field.errors|join:", " }}
-                        </div>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                    
-                    <div class="d-grid mt-4">
-                        <button type="submit" class="btn btn-main btn-lg fw-bold rounded-3 shadow-sm py-3">
-                            <i class="bi bi-box-arrow-in-right me-2"></i> Log In
-                        </button>
-                    </div>
-                </form>
+<div class="container py-5">
+    <div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+        <div class="col-md-5">
+            <div class="telemd-card p-5 text-center shadow-lg border-0" style="border-radius: 2rem;">
                 
-                <div class="mt-4 text-center">
-                    <p class="text-muted small">Need a medical account? <a href="{% url 'register' %}" class="fw-bold text-main-theme">Register here</a></p>
+                <!-- Secure Shield Lock Icon -->
+                <div class="mb-4 d-inline-block p-4 rounded-circle" style="background: rgba(0, 44, 75, 0.03);">
+                    <i class="bi bi-shield-lock-fill fs-1" style="color: var(--telemd-navy); opacity: 0.15;"></i>
+                </div>
+                
+                <h2 class="fw-bold mb-5" style="color: var(--telemd-navy); letter-spacing: -0.02em;">Secure Login</h2>
+
+                <form method="POST" class="text-start">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-uppercase ms-1" style="color: #64748b; letter-spacing: 0.05em;">Username</label>
+                        <input type="text" name="username" class="form-control form-control-lg px-3 py-3" 
+                               style="border-radius: 12px; border: 1.5px solid #e2e8f0; font-size: 1rem;" required>
+                    </div>
+
+                    <div class="mb-5">
+                        <label class="form-label small fw-bold text-uppercase ms-1" style="color: #64748b; letter-spacing: 0.05em;">Password</label>
+                        <input type="password" name="password" class="form-control form-control-lg px-3 py-3" 
+                               style="border-radius: 12px; border: 1.5px solid #e2e8f0; font-size: 1rem;" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-telemd-navy w-100 py-3 d-flex align-items-center justify-content-center shadow" style="border-radius: 12px;">
+                        <i class="bi bi-door-open-fill me-2 fs-5"></i> Log In
+                    </button>
+                </form>
+
+                <div class="mt-5 pt-3 border-top">
+                    <p class="small text-muted mb-0">Need a medical account? <a href="{% url 'register' %}" class="fw-bold text-decoration-none" style="color: var(--telemd-teal);">Register here</a></p>
                 </div>
             </div>
         </div>
-        <div class="text-center mt-4 text-muted small">
-            <i class="bi bi-lock-fill me-1"></i> Encrypted Clinical Access
-        </div>
     </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-    document.querySelectorAll('input').forEach(el => {
-        el.classList.add('form-control');
-        el.classList.add('py-2');
-    });
-</script>
 {% endblock %}
