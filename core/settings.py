@@ -70,7 +70,7 @@ else:
 
 STORAGES = {
     "default": {"BACKEND": DEFAULT_FILE_STORAGE},
-    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
 }
 
 AUTH_USER_MODEL = 'accounts.User'
