@@ -1,63 +1,73 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center align-items-center" style="min-height: 80vh;">
+<div class="container py-4">
+    <div class="row justify-content-center align-items-center" style="min-height: 85vh;">
         <div class="col-lg-6 col-md-8">
-            <div class="telemd-card p-5 text-center shadow-lg border-0" style="border-radius: 2rem;">
+            <!-- Bicolor TeleMD Card (Navy Header / White Body) - Match Image 4 -->
+            <div class="telemd-card p-0 border-0 shadow-lg overflow-hidden" style="border-radius: 2rem;">
                 
-                <!-- Secure Icon -->
-                <div class="mb-4 d-inline-block p-4 rounded-circle" style="background: rgba(0, 44, 75, 0.03);">
-                    <i class="bi bi-person-plus-fill fs-1" style="color: var(--telemd-navy); opacity: 0.15;"></i>
+                <!-- Navy Header Section -->
+                <div class="bg-telemd-navy py-5 text-center text-white">
+                    <div class="mb-3 d-inline-block">
+                        <i class="bi bi-person-plus-fill fs-1"></i>
+                    </div>
+                    <h2 class="fw-bold mb-0" style="letter-spacing: -0.02em;">Create Medical Account</h2>
                 </div>
                 
-                <h2 class="fw-bold mb-4" style="color: var(--telemd-navy); letter-spacing: -0.02em;">Create Account</h2>
-                <p class="text-muted mb-5">Join the TeleMD professional network.</p>
-
-                <form method="POST" class="text-start" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <label class="form-label small fw-bold text-uppercase ms-1" style="color: #64748b; letter-spacing: 0.05em;">First Name</label>
-                            <input type="text" name="first_name" class="form-control form-control-lg px-3" style="border-radius: 12px; border: 1.5px solid #e2e8f0;" required>
+                <!-- White Body Section -->
+                <div class="p-5 bg-white">
+                    <form method="POST" class="text-start" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-uppercase ms-1" style="color: #64748b; letter-spacing: 0.05em;">Username <span class="text-danger">*</span></label>
+                            <input type="text" name="username" class="form-control form-control-lg px-3" style="border-radius: 8px; border: 1.5px solid #e2e8f0;" required>
+                            <small class="text-muted" style="font-size: 0.7rem;">Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.</small>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label small fw-bold text-uppercase ms-1" style="color: #64748b; letter-spacing: 0.05em;">Last Name</label>
-                            <input type="text" name="last_name" class="form-control form-control-lg px-3" style="border-radius: 12px; border: 1.5px solid #e2e8f0;" required>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-uppercase ms-1" style="color: #64748b; letter-spacing: 0.05em;">First Name</label>
+                                <input type="text" name="first_name" class="form-control form-control-lg px-3" style="border-radius: 8px; border: 1.5px solid #e2e8f0;">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-uppercase ms-1" style="color: #64748b; letter-spacing: 0.05em;">Last Name</label>
+                                <input type="text" name="last_name" class="form-control form-control-lg px-3" style="border-radius: 8px; border: 1.5px solid #e2e8f0;">
+                            </div>
                         </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-uppercase ms-1" style="color: #64748b; letter-spacing: 0.05em;">Email Address</label>
+                            <input type="email" name="email" class="form-control form-control-lg px-3" style="border-radius: 8px; border: 1.5px solid #e2e8f0;">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-uppercase ms-1" style="color: #64748b; letter-spacing: 0.05em;">Phone Number <span class="text-danger">*</span></label>
+                            <input type="text" name="phone_number" class="form-control form-control-lg px-3" style="border-radius: 8px; border: 1.5px solid #e2e8f0;" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-uppercase ms-1" style="color: #64748b; letter-spacing: 0.05em;">Registration Type</label>
+                            <select name="role" class="form-select form-select-lg px-3" style="border-radius: 8px; border: 1.5px solid #e2e8f0;">
+                                <option value="patient">Patient seeking care</option>
+                                <option value="doctor">Health Worker (Doctor)</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="form-label small fw-bold text-uppercase ms-1" style="color: #64748b; letter-spacing: 0.05em;">Password <span class="text-danger">*</span></label>
+                            <input type="password" name="password" class="form-control form-control-lg px-3" style="border-radius: 8px; border: 1.5px solid #e2e8f0;" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-telemd-navy w-100 py-3 d-flex align-items-center justify-content-center shadow-sm" style="border-radius: 12px; font-size: 1.1rem;">
+                            <i class="bi bi-check-circle-fill me-2"></i> Join TeleMD
+                        </button>
+                    </form>
+
+                    <div class="text-center mt-5">
+                        <p class="small text-muted mb-0">Already have a medical account? <a href="{% url 'login' %}" class="fw-bold text-decoration-none border-bottom border-2 border-telemd-navy pb-1" style="color: var(--telemd-navy);">Log in here</a></p>
                     </div>
-
-                    <div class="mb-4">
-                        <label class="form-label small fw-bold text-uppercase ms-1" style="color: #64748b; letter-spacing: 0.05em;">Username</label>
-                        <input type="text" name="username" class="form-control form-control-lg px-3" style="border-radius: 12px; border: 1.5px solid #e2e8f0;" required>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="form-label small fw-bold text-uppercase ms-1" style="color: #64748b; letter-spacing: 0.05em;">Phone Number</label>
-                        <input type="text" name="phone_number" class="form-control form-control-lg px-3" style="border-radius: 12px; border: 1.5px solid #e2e8f0;" required>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="form-label small fw-bold text-uppercase ms-1" style="color: #64748b; letter-spacing: 0.05em;">Registration Type</label>
-                        <select name="role" class="form-select form-select-lg px-3" style="border-radius: 12px; border: 1.5px solid #e2e8f0;">
-                            <option value="patient">Patient seeking care</option>
-                            <option value="doctor">Health Worker (Doctor)</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-5">
-                        <label class="form-label small fw-bold text-uppercase ms-1" style="color: #64748b; letter-spacing: 0.05em;">Password</label>
-                        <input type="password" name="password" class="form-control form-control-lg px-3" style="border-radius: 12px; border: 1.5px solid #e2e8f0;" required>
-                    </div>
-
-                    <button type="submit" class="btn btn-telemd-navy w-100 py-3 d-flex align-items-center justify-content-center shadow" style="border-radius: 12px;">
-                        <i class="bi bi-check-circle-fill me-2 fs-5"></i> Create Patient Account
-                    </button>
-                </form>
-
-                <div class="mt-5 pt-3 border-top">
-                    <p class="small text-muted mb-0">Already have an account? <a href="{% url 'login' %}" class="fw-bold text-decoration-none" style="color: var(--telemd-teal);">Log in here</a></p>
                 </div>
             </div>
         </div>
