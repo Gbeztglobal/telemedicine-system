@@ -72,7 +72,7 @@ CHANNEL_LAYERS = {
     },
 }
 
-# --- CLOUDINARY & MEDIA SETTINGS (Fix: removed DEFAULT_FILE_STORAGE conflict) ---
+# --- CLOUDINARY & MEDIA SETTINGS ---
 CLOUDINARY_STORAGE = {}
 if os.environ.get('CLOUDINARY_URL'):
     CLOUDINARY_STORAGE['CLOUDINARY_URL'] = os.environ.get('CLOUDINARY_URL')
@@ -81,12 +81,8 @@ else:
     PROD_STORAGE_BACKEND = 'django.core.files.storage.FileSystemStorage'
 
 STORAGES = {
-    "default": {
-        "BACKEND": PROD_STORAGE_BACKEND,
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
-    },
+    "default": {"BACKEND": PROD_STORAGE_BACKEND},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
 }
 
 AUTH_USER_MODEL = 'accounts.User'
