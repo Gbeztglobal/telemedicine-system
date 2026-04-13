@@ -1,9 +1,10 @@
 import os
+import dj_database_url
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = 'django-insecure-dummy'
-DEBUG = True
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-dummy-key')
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
@@ -14,6 +15,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     'accounts',
     'telemedicine',
@@ -49,31 +51,26 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'core.wsgi.application'
+
+# --- DATABASE CONFIGURATION (Fix for Render) ---
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default='sqlite:///db.sqlite3',
+        conn_max_age=600
+    )
 }
 
-# --- CLOUDINARY & MEDIA SETTINGS (Fix for 500 Error) ---
+# --- CLOUDINARY & MEDIA SETTINGS ---
 CLOUDINARY_STORAGE = {}
-
-# Use Cloudinary if the URL is available (Render), otherwise fallback safely
 if os.environ.get('CLOUDINARY_URL'):
     CLOUDINARY_STORAGE['CLOUDINARY_URL'] = os.environ.get('CLOUDINARY_URL')
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 else:
-    # Safe local fallback to prevent 500 error if keys are missing
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 STORAGES = {
-    "default": {
-        "BACKEND": DEFAULT_FILE_STORAGE,
-    },
-    "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-    },
+    "default": {"BACKEND": DEFAULT_FILE_STORAGE},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
 }
 
 AUTH_USER_MODEL = 'accounts.User'
