@@ -1,0 +1,32 @@
+from django.db import models
+from accounts.models import User
+from appointments.models import Appointment
+
+class Prescription(models.Model):
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE, related_name='prescriptions', null=True, blank=True)
+    patient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='prescriptions')
+    doctor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='given_prescriptions')
+    medication_details = models.TextField()
+    instructions = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Prescription for {self.patient.username} by {self.doctor.username}"
+
+class PrescriptionRequest(models.Model):
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('reviewed', 'Reviewed')
+    )
+    patient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='prescription_requests')
+    doctor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_requests')
+    patient_notes = models.TextField(help_text="Describe the prescription you need")
+    lab_report = models.FileField(upload_to='lab_reports/', blank=True, null=True, help_text="Upload your lab report")
+    consultation_summary = models.TextField(blank=True, null=True)
+    doctor_comments = models.TextField(blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"Prescription Request by {self.patient.username}"

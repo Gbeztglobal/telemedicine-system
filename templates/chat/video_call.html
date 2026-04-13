@@ -1,90 +1,100 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="whatsapp-video-container" style="background: #000b14;">
-    <!-- Main Remote Video (Black background to match premium feel) -->
-    <video id="remoteVideo" autoplay playsinline class="remote-video w-100 h-100" style="object-fit: cover;"></video>
-    <div class="video-overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to bottom, rgba(0,44,75,0.4) 0%, transparent 20%, transparent 80%, rgba(0,44,75,0.6) 100%); pointer-events: none;"></div>
-
-    <!-- Top Info Bar (Match TeleMD Navy) -->
-    <div class="top-info p-4" style="position: absolute; top: 0; left: 0; right: 0; z-index: 100;">
-        <div class="d-flex align-items-center">
-            <button onclick="window.history.back()" class="btn btn-link text-white me-3 p-0"><i class="bi bi-chevron-left fs-3"></i></button>
-            <div class="position-relative me-3">
-                <img src="{{ target_user.avatar_url }}" class="rounded-circle border border-2 border-white shadow" width="50" height="50" style="object-fit:cover;">
-                <span class="status-dot" style="bottom: 2px; right: 2px; width: 14px; height: 14px;"></span>
+<div class="row g-0 h-100" style="min-height: 80vh;">
+    <!-- VIDEO STREAM AREA -->
+    <div class="col-lg-{% if user.role == 'doctor' %}8{% else %}12{% endif %} position-relative bg-dark overflow-hidden rounded-start-4">
+        
+        <!-- Main Remote Video -->
+        <video id="remoteVideo" autoplay playsinline class="w-100 h-100" style="object-fit: cover;"></video>
+        
+        <!-- Glass Overlay (Top Bar) -->
+        <div class="position-absolute top-0 w-100 p-4" style="z-index: 10;">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center glass-overlay px-3 py-2">
+                    <button onclick="window.history.back()" class="btn btn-link text-white p-0 me-3"><i class="bi bi-chevron-left fs-4"></i></button>
+                    <img src="{{ target_user.avatar_url }}" class="rounded-circle border border-2 border-white me-2" width="40" height="40" style="object-fit:cover;">
+                    <div>
+                        <h6 class="mb-0 text-white fw-bold">{{ target_user.get_full_name }}</h6>
+                        <span class="small text-white-50"><i class="bi bi-shield-lock-fill text-success small"></i> Encrypted Call</span>
+                    </div>
+                </div>
+                <div class="badge bg-danger animate-pulse">LIVE</div>
             </div>
-            <div class="ms-1">
-                <h5 class="mb-0 text-white fw-bold">Dr. {{ target_user.last_name }}</h5>
-                <div id="callStatus" class="small text-white-50 d-flex align-items-center">
-                    <i class="bi bi-shield-lock-fill me-1 text-success"></i> End-to-end encrypted
+        </div>
+
+        <!-- PIP Local Video -->
+        <div class="position-absolute shadow-lg" style="bottom: 100px; right: 20px; width: 140px; height: 180px; z-index: 20; border-radius: 1rem; border: 2px solid var(--telemd-teal); overflow: hidden;">
+            <video id="localVideo" autoplay muted playsinline class="w-100 h-100" style="object-fit: cover; transform: scaleX(-1);"></video>
+        </div>
+
+        <!-- Glass Controls (Bottom) -->
+        <div class="position-absolute bottom-0 w-100 p-4 d-flex justify-content-center" style="z-index: 20;">
+            <div class="glass-overlay px-4 py-3 d-flex gap-4 shadow-lg" style="border-radius: 2rem;">
+                <button class="btn btn-outline-light rounded-circle p-3"><i class="bi bi-mic-fill"></i></button>
+                <button class="btn btn-danger rounded-circle p-3 px-4 shadow"><i class="bi bi-telephone-x-fill"></i></button>
+                <button class="btn btn-outline-light rounded-circle p-3"><i class="bi bi-camera-video-fill"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DOCTOR HUD SIDEBAR (Only visible to doctors) -->
+    {% if user.role == 'doctor' %}
+    <div class="col-lg-4 glass-card rounded-0 border-top-0 border-end-0 border-bottom-0 d-flex flex-column h-100 p-0" style="border-left: 1px solid rgba(255,255,255,0.2) !important;">
+        
+        <div class="bg-telemd-navy text-white px-4 py-3 d-flex align-items-center">
+            <i class="bi bi-clipboard2-pulse me-2"></i>
+            <h6 class="fw-bold mb-0">Clinical HUD</h6>
+        </div>
+
+        <div class="p-4 flex-grow-1 overflow-auto">
+            <!-- Patient Mini-Profile -->
+            <div class="text-center mb-4">
+                <img src="{{ target_user.avatar_url }}" class="rounded-circle mb-2" width="80" height="80" style="object-fit:cover;">
+                <h5 class="fw-bold text-telemd-navy mb-0">{{ target_user.get_full_name }}</h5>
+                <p class="text-muted small">UID: #{{ target_user.id }}</p>
+            </div>
+
+            <!-- Risk AI Analysis Box -->
+            <h6 class="text-muted fw-bold small text-uppercase mb-3">AI Case Triage</h6>
+            <div class="glass-overlay p-3 mb-4 d-flex gap-2 text-center" style="background: rgba(0, 166, 140, 0.05); border-color: rgba(0, 166, 140, 0.2);">
+                <div class="w-50 border-end border-light">
+                    <span class="d-block small text-muted mb-1">Malaria Risk</span>
+                    <span class="badge bg-success">Low</span>
+                </div>
+                <div class="w-50">
+                    <span class="d-block small text-muted mb-1">Cholera Risk</span>
+                    <span class="badge bg-success">Low</span>
                 </div>
             </div>
+
+            <!-- Pre-Assessment Symptoms -->
+            <h6 class="text-muted fw-bold small text-uppercase mb-3">Reported Symptoms</h6>
+            <div class="p-3 bg-light rounded-3 border-0 mb-4 text-dark small fw-semibold">
+                "Patient reported mild fatigue and headaches starting 2 days ago."
+            </div>
+
+            <!-- Quick Action -->
+            <button class="btn btn-telemd-navy w-100 fw-bold"><i class="bi bi-capsule me-2"></i> Issue Electronic Prescription</button>
         </div>
     </div>
-
-    <!-- Picture-in-Picture (Preserved logic, Local Video) -->
-    <div class="local-v-pip shadow-lg" id="localPip" style="border: 2px solid rgba(0, 166, 140, 0.5); border-radius: 1.25rem;">
-        <video id="localVideo" autoplay muted playsinline class="w-100 h-100" style="object-fit: cover; transform: scaleX(-1);"></video>
-    </div>
-
-    <!-- Bottom Controls (Premium Controls) -->
-    <div class="bottom-controls pb-5" style="z-index: 100;">
-        <div class="d-flex gap-4">
-            <button id="toggleMic" class="control-circle shadow"><i class="bi bi-mic-fill"></i></button>
-            <button id="hangUp" class="control-circle bg-danger border-0 shadow" style="width: 70px; height: 70px; transform: translateY(-7px);"><i class="bi bi-telephone-x-fill fs-3"></i></button>
-            <button id="toggleCamera" class="control-circle shadow"><i class="bi bi-camera-video-fill"></i></button>
-        </div>
-    </div>
+    {% endif %}
 </div>
 
 <script>
-    const localVideo = document.getElementById('localVideo');
-    const remoteVideo = document.getElementById('remoteVideo');
-    const localPip = document.getElementById('localPip');
-
-    // WhatsApp-Style VIEW SWAP LOGIC (Preserved from previous turns)
-    let isSwapped = false;
-    localPip.onclick = () => {
-        isSwapped = !isSwapped;
-        const localObj = localVideo.srcObject;
-        const remoteObj = remoteVideo.srcObject;
-        
-        localVideo.srcObject = remoteObj;
-        remoteVideo.srcObject = localObj;
-        
-        // Handle Mirroring
-        if (isSwapped) {
-            remoteVideo.style.transform = 'scaleX(-1)';
-            localVideo.style.transform = 'none';
-        } else {
-            remoteVideo.style.transform = 'none';
-            localVideo.style.transform = 'scaleX(-1)';
-        }
-    };
-
-    // Initialize WebRTC (Logic is preserved)
-    async function init() {
+    // Faux WebRTC Init for UI demonstration
+    async function initHUDVideo() {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            localVideo.srcObject = stream;
+            document.getElementById('localVideo').srcObject = stream;
         } catch (e) {
-            console.error("Camera access denied", e);
+            console.error("Camera access", e);
         }
     }
-    init();
+    initHUDVideo();
 </script>
-
 <style>
-    .control-circle { 
-        width: 55px; height: 55px; border-radius: 50%; 
-        background: rgba(255, 255, 255, 0.15); 
-        backdrop-filter: blur(10px); 
-        color: white; border: 1px solid rgba(255,255,255,0.2);
-        display: flex; align-items: center; justify-content: center;
-        transition: all 0.2s ease;
-    }
-    .control-circle:hover { background: rgba(0, 166, 140, 0.8); border-color: transparent; scale: 1.05; }
-    .bottom-controls { position: absolute; bottom: 20px; left: 0; right: 0; display: flex; justify-content: center; }
+    .animate-pulse { animation: pulse 2s infinite; }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 </style>
 {% endblock %}

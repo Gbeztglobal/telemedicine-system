@@ -1,122 +1,133 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container py-2 animate-fade-in">
-    <div class="row g-4">
-        <!-- Sidebar Profile Column -->
-        <div class="col-lg-4 col-md-5">
-            <div class="telemd-card p-0 border-0 shadow-lg overflow-hidden mb-4">
-                <div class="bg-telemd-navy py-4 text-center">
-                    <div class="profile-avatar-container mb-2">
-                        <img src="{{ user.avatar_url }}" class="rounded-circle shadow-sm border border-4 border-white" width="100" height="100" style="object-fit:cover;">
-                        <span class="status-dot"></span>
-                    </div>
+<div class="row g-4 animate-fade-in">
+    <!-- CLINICAL SIDEBAR / ID CARD -->
+    <div class="col-lg-4 col-md-5">
+        <!-- Digital Medical ID Card -->
+        <div class="glass-card mb-4 position-relative" id="medicalIdCard">
+            <!-- Glass Overlay Header -->
+            <div class="glass-nav py-3 text-center text-white" style="border-radius: 1.5rem 1.5rem 0 0;">
+                <i class="bi bi-shield-check fs-4"></i>
+                <h6 class="fw-bold mb-0 text-uppercase tracking-wider">Digital Medical ID</h6>
+            </div>
+            
+            <div class="p-4 text-center bg-white bg-opacity-75">
+                <img src="{{ user.avatar_url }}" class="rounded-circle shadow-sm border border-4 border-white mb-3" width="100" height="100" style="object-fit:cover;">
+                <h3 class="fw-bold text-telemd-navy mb-0">{{ user.first_name }} {{ user.last_name }}</h3>
+                <p class="text-muted small mb-3">PID: #{{ user.id }} | DOB: 1990-01-01</p>
+                
+                <!-- Barcode Simulation -->
+                <div class="bg-white p-2 rounded-3 mx-auto shadow-sm mb-3" style="width: fit-content;">
+                    <svg viewBox="0 0 100 20" class="mx-auto" style="width: 150px; height: 30px;">
+                        <rect x="0" y="0" width="2" height="20" fill="#0A3D62"/>
+                        <rect x="5" y="0" width="5" height="20" fill="#0A3D62"/>
+                        <rect x="15" y="0" width="3" height="20" fill="#0A3D62"/>
+                        <rect x="22" y="0" width="1" height="20" fill="#0A3D62"/>
+                        <rect x="27" y="0" width="7" height="20" fill="#0A3D62"/>
+                        <rect x="40" y="0" width="2" height="20" fill="#0A3D62"/>
+                        <rect x="45" y="0" width="10" height="20" fill="#0A3D62"/>
+                        <rect x="60" y="0" width="4" height="20" fill="#0A3D62"/>
+                        <rect x="70" y="0" width="1" height="20" fill="#0A3D62"/>
+                        <rect x="75" y="0" width="5" height="20" fill="#0A3D62"/>
+                        <rect x="85" y="0" width="3" height="20" fill="#0A3D62"/>
+                        <rect x="95" y="0" width="5" height="20" fill="#0A3D62"/>
+                    </svg>
                 </div>
-                <div class="p-4 text-center bg-white">
-                    <h3 class="fw-bold mb-1">{{ user.first_name }} {{ user.last_name }}</h3>
-                    <p class="text-muted small mb-3">{{ user.email }}</p>
-                    
-                    <div class="d-flex justify-content-center mb-4">
-                        <span class="badge rounded-pill border py-2 px-3 text-dark fw-normal bg-light d-flex align-items-center">
-                            <i class="bi bi-telephone-fill me-2 opacity-50"></i>
-                            {{ user.phone_number }}
-                        </span>
-                    </div>
 
-                    <div class="text-start mt-2 pt-3 border-top">
-                        <h6 class="text-muted small fw-bold mb-3 ls-wide">QUICK ACTIONS</h6>
-                        <a href="{% url 'auto_diagnose' %}" class="btn btn-telemd-navy w-100 mb-3 py-3 d-flex align-items-center justify-content-center shadow-sm">
-                            <i class="bi bi-heart-pulse-fill me-2"></i> AI Auto-Diagnose
-                        </a>
-                        <a href="{% url 'request_prescription' %}" class="btn btn-outline-dark fw-bold w-100 py-3 d-flex align-items-center justify-content-center" style="border-radius: 12px; border-width: 2px;">
-                            <i class="bi bi-file-earmark-text me-2"></i> Request Prescription
-                        </a>
+                <div class="d-flex justify-content-between text-start border-top pt-3 px-2">
+                    <div>
+                        <small class="text-muted d-block text-uppercase" style="font-size: 0.65rem;">Blood Type</small>
+                        <span class="fw-bold text-dark">O+</span>
+                    </div>
+                    <div>
+                        <small class="text-muted d-block text-uppercase" style="font-size: 0.65rem;">Height</small>
+                        <span class="fw-bold text-dark">175cm</span>
+                    </div>
+                    <div>
+                        <small class="text-muted d-block text-uppercase" style="font-size: 0.65rem;">Weight</small>
+                        <span class="fw-bold text-dark">70kg</span>
                     </div>
                 </div>
+            </div>
+            <!-- Quick Actions Footer -->
+            <div class="p-3 bg-light bg-opacity-75 d-flex gap-2" style="border-radius: 0 0 1.5rem 1.5rem;">
+                <button class="btn btn-outline-secondary btn-sm w-50 fw-bold" onclick="window.print()">Print ID</button>
+                <a href="{% url 'profile' %}" class="btn btn-telemd-navy btn-sm w-50 fw-bold">Edit Info</a>
             </div>
         </div>
+    </div>
 
-        <!-- Main Content Column -->
-        <div class="col-lg-8 col-md-7">
-            <!-- Recent Assessment Card (Bicolor Pattern) -->
-            <div class="telemd-card p-0 border-0 shadow-lg overflow-hidden mb-4">
-                <div class="bg-telemd-navy px-4 py-3 d-flex align-items-center text-white">
-                    <i class="bi bi-clipboard2-pulse me-3 fs-5 opacity-75"></i>
-                    <h5 class="mb-0 fw-bold">Recent Health Assessment</h5>
-                </div>
-                <div class="p-4 bg-white">
-                    <div class="p-4 border border-light rounded-4 bg-light mb-0" style="border-left: 5px solid var(--telemd-teal) !important;">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <div>
-                                <h5 class="fw-bold mb-1">Apr 11, 2026</h5>
-                                <p class="text-muted small mb-0">Symptoms: {{ latest_diagnosis.symptoms|default:"i am coughing and stooling" }}</p>
-                            </div>
-                            <span class="text-muted x-small">34 minutes ago</span>
-                        </div>
+    <!-- MAIN RECORD TIMELINE -->
+    <div class="col-lg-8 col-md-7">
+        
+        <h4 class="fw-bold text-telemd-navy mb-4 d-flex align-items-center">
+            <i class="bi bi-clock-history me-2 text-telemd-teal"></i> Clinical Timeline
+        </h4>
 
-                        <div class="d-flex gap-2 mb-4">
-                            <span class="badge rounded-pill bg-success-subtle text-success border border-success px-3 py-2">Malaria: Low</span>
-                            <span class="badge rounded-pill bg-success-subtle text-success border border-success px-3 py-2">Cholera: Low</span>
-                        </div>
-
-                        <div class="p-3 fs-7 rounded-3 d-flex align-items-start" style="background: #eef2ff; border-left: 4px solid #4f46e5; color: #1e1b4b;">
-                            <i class="bi bi-info-circle-fill me-2 mt-1"></i>
-                            <div>
-                                <p class="mb-0 fw-bold small">Advice: Your symptoms indicate a low risk for Malaria and Cholera. Rest and maintain good hygiene.</p>
-                            </div>
+        <!-- Timeline Container (Glassmorphism) -->
+        <div class="timeline-container position-relative">
+            <!-- Timeline Line -->
+            <div class="position-absolute h-100 bg-white shadow-sm" style="width: 2px; left: 15px; top: 10px; z-index: 1;"></div>
+            
+            <!-- Timeline Item 1 -->
+            <div class="d-flex mb-4 position-relative z-index-2">
+                <div class="bg-telemd-teal rounded-circle border border-4 border-white shadow-sm mt-1" style="width: 32px; height: 32px; z-index: 2; margin-right: 20px;"></div>
+                <div class="glass-card flex-grow-1 p-0">
+                    <div class="glass-nav px-4 py-2 d-flex justify-content-between align-items-center text-white">
+                        <h6 class="mb-0 fw-bold"><i class="bi bi-robot me-2"></i> AI Health Assessment</h6>
+                        <span class="small opacity-75">Apr 11, 2026</span>
+                    </div>
+                    <div class="p-4 bg-white bg-opacity-75">
+                        <h6 class="fw-bold text-dark mb-2">Reported Symptoms:</h6>
+                        <p class="text-muted small">Severe headaches, mild fever, and nausea.</p>
+                        
+                        <div class="d-flex gap-2">
+                            <span class="badge bg-success bg-opacity-25 text-success border border-success fw-bold">Malaria: Low Risk</span>
+                            <span class="badge bg-warning bg-opacity-25 text-warning border border-warning fw-bold">Typhoid: Med Risk</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Prescription Requests Card (Bicolor Pattern) -->
-            <div class="telemd-card p-0 border-0 shadow-lg overflow-hidden">
-                <div class="bg-telemd-navy px-4 py-3 d-flex align-items-center justify-content-between text-white">
-                    <div class="d-flex align-items-center">
-                        <i class="bi bi-file-medical me-3 fs-5 opacity-75"></i>
-                        <h5 class="mb-0 fw-bold">Prescription Requests</h5>
+            <!-- Timeline Item 2 -->
+            <div class="d-flex mb-4 position-relative z-index-2">
+                <div class="bg-telemd-navy rounded-circle border border-4 border-white shadow-sm mt-1" style="width: 32px; height: 32px; z-index: 2; margin-right: 20px;"></div>
+                <div class="glass-card flex-grow-1 p-0">
+                    <div class="glass-nav px-4 py-2 d-flex justify-content-between align-items-center text-white">
+                        <h6 class="mb-0 fw-bold"><i class="bi bi-capsule me-2"></i> E-Prescription Issued</h6>
+                        <span class="small opacity-75">Mar 25, 2026</span>
                     </div>
-                    <a href="{% url 'request_prescription' %}" class="small fw-bold text-white-50 text-decoration-none hover-white">View All</a>
-                </div>
-                <div class="p-4 bg-white">
-                    {% if prescription_requests %}
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle border-0">
-                                <thead class="bg-light">
-                                    <tr>
-                                        <th class="border-0 text-muted small px-4 py-3">Date</th>
-                                        <th class="border-0 text-muted small px-4 py-3">Status</th>
-                                        <th class="border-0 px-4 py-3"></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for request in prescription_requests %}
-                                    <tr>
-                                        <td class="px-4 py-3 fw-semibold">{{ request.created_at|date:"M d, Y" }}</td>
-                                        <td class="px-4 py-3 text-end"><i class="bi bi-chevron-right text-muted"></i></td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                    <div class="p-4 bg-white bg-opacity-75">
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="https://ui-avatars.com/api/?name=Dr+Smith&background=0A3D62&color=fff" class="rounded-circle me-3 border" width="40">
+                            <div>
+                                <h6 class="fw-bold mb-0">Issued by Dr. Smith</h6>
+                                <span class="text-muted x-small">General Practitioner</span>
+                            </div>
                         </div>
-                    {% else %}
-                        <div class="text-center py-5">
-                            <i class="bi bi-folder2-open fs-1 text-muted opacity-25"></i>
-                            <p class="text-muted mt-3">No active prescription requests found.</p>
+                        <div class="p-3 bg-light rounded-3 border-start border-4 border-telemd-navy">
+                            <strong class="d-block small text-dark">Amoxicillin 500mg</strong>
+                            <span class="text-muted x-small">Take 1 tablet every 8 hours for 7 days.</span>
                         </div>
-                    {% endif %}
+                    </div>
                 </div>
             </div>
+
         </div>
     </div>
 </div>
 
 <style>
-    .animate-fade-in { animation: fadeIn 0.8s ease-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .ls-wide { letter-spacing: 0.05em; }
+    .tracking-wider { letter-spacing: 0.1em; }
+    .z-index-2 { z-index: 2; }
     .x-small { font-size: 0.75rem; }
-    .fs-7 { font-size: 0.85rem; }
-    .hover-white:hover { color: white !important; }
+    
+    @media print {
+        body * { visibility: hidden; }
+        #medicalIdCard, #medicalIdCard * { visibility: visible; }
+        #medicalIdCard { position: absolute; left: 0; top: 0; width: 400px; box-shadow: none !important; border: 1px solid #ccc; }
+        .glass-nav { background: #0A3D62 !important; -webkit-print-color-adjust: exact; }
+    }
 </style>
 {% endblock %}
