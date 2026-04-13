@@ -82,7 +82,7 @@ else:
 
 STORAGES = {
     "default": {"BACKEND": PROD_STORAGE_BACKEND},
-    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
+    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
 }
 
 AUTH_USER_MODEL = 'accounts.User'
