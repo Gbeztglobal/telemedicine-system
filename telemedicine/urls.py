@@ -7,6 +7,7 @@ urlpatterns = [
     path('auto-diagnose/', views.auto_diagnose, name='auto_diagnose'),
     path('prescription/request/', views.request_prescription, name='request_prescription'),
     path('prescription/review/<int:request_id>/', views.review_prescription, name='review_prescription'),
+    path('prescription/ai-summary/<int:request_id>/', views.generate_ai_summary, name='generate_ai_summary'),
     path('appointment/book/', views.book_appointment, name='book_appointment'),
     path('appointment/confirm/<int:appointment_id>/', views.confirm_appointment, name='confirm_appointment'),
     path('appointment/complete/<int:appointment_id>/', views.complete_appointment, name='complete_appointment'),

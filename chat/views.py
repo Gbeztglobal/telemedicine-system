@@ -59,3 +59,18 @@ def upload_voice_note(request):
         )
         return JsonResponse({'status': 'success', 'url': msg.voice_note.url})
     return JsonResponse({'status': 'error'}, status=400)
+@login_required
+def upload_chat_media(request):
+    if request.method == 'POST' and request.FILES.get('media_file'):
+        from .models import Message
+        receiver_id = request.POST.get('receiver_id')
+        receiver = get_object_or_404(User, id=receiver_id)
+        
+        msg = Message.objects.create(
+            sender=request.user,
+            receiver=receiver,
+            media_file=request.FILES['media_file'],
+            text_content=f"Sent a file: {request.FILES['media_file'].name}"
+        )
+        return JsonResponse({'status': 'success', 'url': msg.media_file.url})
+    return JsonResponse({'status': 'error'}, status=400)

@@ -106,6 +106,13 @@
                         </div>
                         <div class="bg-light p-3 rounded text-secondary border">
                             "{{ req.patient_notes }}"
+                            {% if req.lab_report %}
+                            <div class="mt-2 text-start">
+                                <a href="{{ req.lab_report.url }}" target="_blank" class="smallest fw-bold text-main-theme">
+                                    <i class="bi bi-file-earmark-pdf-fill text-danger me-1"></i> VIEW LAB REPORT
+                                </a>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -199,6 +206,12 @@
                             </td>
                             <td class="px-4 py-3 text-end">
                                 <div class="btn-group">
+                                    <a href="{% url 'video_call' patient.id %}?active_call=audio" class="btn btn-sm btn-outline-success rounded-circle me-2 p-1 px-2" title="Quick Audio Call">
+                                        <i class="bi bi-telephone-fill"></i>
+                                    </a>
+                                    <a href="{% url 'video_call' patient.id %}" class="btn btn-sm btn-outline-primary rounded-circle me-2 p-1 px-2" title="Quick Video Call">
+                                        <i class="bi bi-camera-video-fill"></i>
+                                    </a>
                                     <a href="{% url 'patient_record_detail' patient.id %}" class="btn btn-sm btn-outline-main rounded-pill me-2 px-3">
                                         <i class="bi bi-file-earmark-person me-1"></i> Record
                                     </a>

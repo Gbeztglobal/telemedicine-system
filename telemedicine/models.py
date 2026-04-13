@@ -56,6 +56,8 @@ class PrescriptionRequest(models.Model):
     patient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='prescription_requests')
     doctor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_requests')
     patient_notes = models.TextField(help_text="Describe the prescription you need")
+    lab_report = models.FileField(upload_to='lab_reports/', blank=True, null=True, help_text="Upload your lab report (PDF/Image)")
+    consultation_summary = models.TextField(blank=True, null=True)
     doctor_comments = models.TextField(blank=True, null=True, help_text="Feedback or actual prescription details from doctor")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)

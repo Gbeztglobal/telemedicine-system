@@ -13,10 +13,14 @@
                     <!-- Left: Avatar and Digital ID -->
                     <div class="col-md-5 text-center border-md-end">
                         <div class="identity-avatar-container mb-4">
-                            <div class="position-relative d-inline-block mx-auto">
-                                <img src="{{ user.avatar_url }}" class="rounded-circle shadow-lg border border-4 border-white hover-lift" width="160" height="160" style="object-fit:cover;">
+                            <div class="position-relative d-inline-block mx-auto cursor-pointer" onclick="document.getElementById('id_avatar').click()">
+                                <img src="{{ user.avatar_url }}" class="rounded-circle shadow-lg border border-4 border-white hover-lift avatar-preview" width="160" height="160" style="object-fit:cover;">
+                                <div class="position-absolute top-0 start-0 w-100 h-100 rounded-circle d-flex align-items-center justify-content-center bg-dark bg-opacity-50 opacity-0 avatar-overlay transition-all">
+                                    <i class="bi bi-camera-fill text-white fs-1"></i>
+                                </div>
                                 <span class="position-absolute bottom-0 end-0 p-3 bg-success border border-4 border-white rounded-circle shadow-sm" title="Active"></span>
                             </div>
+                            <p class="smallest text-muted mt-2 fw-bold text-uppercase">Click photo to change</p>
                         </div>
                         <h4 class="fw-extrabold text-dark mb-1">{{ user.get_full_name }}</h4>
                         <p class="text-muted small text-uppercase fw-bold ls-1 mb-4">{{ user.get_role_display }}</p>
@@ -56,7 +60,7 @@
                             {% csrf_token %}
                             
                             {% for field in form %}
-                            <div class="mb-4">
+                            <div class="mb-4 {% if field.name == 'avatar' %}d-none{% endif %}">
                                 <label for="{{ field.id_for_label }}" class="form-label fw-bold text-dark smallest text-uppercase mb-2">
                                     {% if 'phone' in field.label|lower %}<i class="bi bi-telephone-fill me-1 text-main-theme"></i>{% endif %}
                                     {% if 'name' in field.label|lower %}<i class="bi bi-person-fill me-1 text-main-theme"></i>{% endif %}
@@ -109,5 +113,31 @@
         box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
         outline: none;
     }
+
+    .cursor-pointer { cursor: pointer; }
+    .avatar-preview { transition: all 0.3s; }
+    .identity-avatar-container:hover .avatar-overlay { opacity: 1 !important; }
+    .identity-avatar-container:hover .avatar-preview { filter: blur(2px); }
+    .transition-all { transition: all 0.3s ease; }
 </style>
+
+<script>
+    // Preview image before upload
+    document.addEventListener('DOMContentLoaded', function() {
+        const avatarInput = document.getElementById('id_avatar');
+        const avatarPreview = document.querySelector('.avatar-preview');
+        
+        if (avatarInput) {
+            avatarInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        avatarPreview.src = e.target.result;
+                    };
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

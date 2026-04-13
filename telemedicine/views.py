@@ -3,7 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Diagnosis, Appointment, Prescription, PrescriptionRequest
 from accounts.models import User
-from .services.ai_diagnosis import analyze_symptoms
+from .services.ai_diagnosis import analyze_symptoms, generate_consultation_summary
+from django.http import JsonResponse
 
 @login_required
 def patient_dashboard(request):
@@ -87,10 +88,13 @@ def request_prescription(request):
         
     if request.method == 'POST':
         notes = request.POST.get('patient_notes')
+        lab_report = request.FILES.get('lab_report')
         PrescriptionRequest.objects.create(
             patient=request.user,
-            patient_notes=notes
+            patient_notes=notes,
+            lab_report=lab_report
         )
+        messages.success(request, "Prescription request submitted successfully with attachments.")
         return redirect('patient_dashboard')
         
     return render(request, 'telemedicine/request_prescription.html')
@@ -248,3 +252,26 @@ def doctor_directory(request):
         return redirect('doctor_dashboard')
     doctors = User.objects.filter(role='doctor')
     return render(request, 'telemedicine/doctor_directory.html', {'doctors': doctors})
+@login_required
+def generate_ai_summary(request, request_id):
+    if request.user.role != 'doctor':
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+        
+    prescription_request = get_object_or_404(PrescriptionRequest, id=request_id)
+    latest_diagnosis = Diagnosis.objects.filter(patient=prescription_request.patient).order_by('-created_at').first()
+    
+    if not latest_diagnosis:
+        return JsonResponse({'error': 'No patient diagnostic data found to generate summary.'}, status=404)
+        
+    summary = generate_consultation_summary(
+        prescription_request.patient.get_full_name(),
+        latest_diagnosis.symptoms,
+        latest_diagnosis.malaria_risk,
+        latest_diagnosis.cholera_risk
+    )
+    
+    # Save the summary to the request for persistence
+    prescription_request.consultation_summary = summary
+    prescription_request.save()
+    
+    return JsonResponse({'summary': summary})

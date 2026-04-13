@@ -4,44 +4,70 @@
 <div class="container-fluid h-100 mt-2 px-md-3">
     <div class="row h-100 g-3">
         <!-- Main Call Area -->
-        <div class="{% if request.user.role == 'doctor' %}col-lg-8{% else %}col-lg-12{% endif %} h-100">
-            <div class="card shadow-lg border-0 rounded-4 overflow-hidden position-relative bg-dark main-video-container" style="height: 85vh;">
-                <!-- Remote Video (Full Screen) -->
-                <video id="remoteVideo" autoplay playsinline class="w-100 h-100" style="object-fit: cover; background: #1a1a1a;"></video>
-                
-                <!-- Floating Profile Overlay -->
-                <div class="position-absolute top-0 start-0 m-3 d-flex align-items-center bg-dark bg-opacity-50 p-2 rounded-pill backdrop-blur border border-white border-opacity-10" style="z-index: 30;">
-                    <img src="{{ target_user.avatar_url }}" class="rounded-circle border border-2 border-main-theme shadow-sm" width="40" height="40" style="object-fit:cover;">
-                    <div class="ms-2 pe-2">
-                        <div class="text-white fw-bold small">{% if target_user.role == 'doctor' %}Dr. {% endif %}{{ target_user.last_name }}</div>
-                        <div class="text-white-50" style="font-size: 0.6rem;">{{ target_user.get_role_display }}</div>
-                    </div>
-                </div>
+<div class="whatsapp-video-container">
+    <!-- Remote Video (Full Screen Background) -->
+    <video id="remoteVideo" autoplay playsinline class="remote-video"></video>
+    
+    <!-- Dark Gradient Overlay for readability -->
+    <div class="video-overlay"></div>
 
-                <!-- Local Video (Picture-in-Picture) -->
-                <div class="local-video-pip position-absolute bottom-0 end-0 m-3 shadow-lg border border-2 border-white rounded-4 overflow-hidden" style="z-index: 10;">
-                    <video id="localVideo" autoplay muted playsinline class="w-100 h-100" style="object-fit: cover; background: #333; transform: scaleX(-1);"></video>
-                </div>
-
-                <!-- Call Controls HUD Bar -->
-                <div class="call-controls position-absolute bottom-0 start-50 translate-middle-x mb-4 d-flex gap-2 gap-md-3 px-4 py-2 bg-dark bg-opacity-50 rounded-pill backdrop-blur border border-white border-opacity-10 shadow-lg" style="z-index: 20;">
-                    <button id="toggleMic" class="btn btn-light rounded-circle p-0 d-flex align-items-center justify-content-center control-btn shadow-sm">
-                        <i class="bi bi-mic-fill fs-5"></i>
-                    </button>
-                    <button id="toggleCamera" class="btn btn-light rounded-circle p-0 d-flex align-items-center justify-content-center control-btn shadow-sm">
-                        <i class="bi bi-camera-video-fill fs-5"></i>
-                    </button>
-                    <button id="hangUp" class="btn btn-danger rounded-circle p-0 d-flex align-items-center justify-content-center shadow-lg hangup-btn">
-                        <i class="bi bi-telephone-x-fill fs-4"></i>
-                    </button>
-                </div>
-
-                <!-- Secure Status -->
-                <div id="callStatus" class="position-absolute top-0 start-50 translate-middle-x mt-3 bg-dark bg-opacity-75 text-white px-3 py-2 rounded-pill shadow-sm border border-white border-opacity-10" style="z-index: 20; font-size: 0.65rem;">
-                    <span class="animate-pulse-fast text-success me-2"><i class="bi bi-shield-lock-fill"></i></span> End-to-End Encrypted Consultation
+    <!-- Top Navigation Info -->
+    <div class="top-info animate-fade-in">
+        <div class="d-flex align-items-center">
+            <button onclick="window.history.back()" class="btn btn-link text-white me-3 p-0"><i class="bi bi-chevron-left fs-3"></i></button>
+            <div class="d-flex align-items-center">
+                <img src="{{ target_user.avatar_url }}" class="rounded-circle border border-2 border-white shadow" width="45" height="45" style="object-fit:cover;">
+                <div class="ms-3">
+                    <h5 class="mb-0 text-white fw-bold">{% if target_user.role == 'doctor' %}Dr. {% endif %}{{ target_user.last_name }}</h5>
+                    <div id="callStatus" class="small text-white-50"><i class="bi bi-shield-lock-fill me-1 text-success"></i> End-to-end encrypted</div>
                 </div>
             </div>
         </div>
+        {% if request.user.role == 'doctor' %}
+        <button class="btn btn-outline-light rounded-pill px-3 py-1 small fw-bold shadow-sm" onclick="toggleRecords()">
+            <i class="bi bi-file-earmark-medical me-1"></i> Records
+        </button>
+        {% endif %}
+    </div>
+
+    <!-- Doctor-Only Clinical Overlay -->
+    {% if request.user.role == 'doctor' %}
+    <div id="recordsOverlay" class="records-overlay shadow-lg">
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold text-dark">Patient Context HUD</h6>
+            <button class="btn-close btn-sm" onclick="toggleRecords()"></button>
+        </div>
+        <div class="p-3 overflow-auto" style="height: calc(100% - 60px);">
+            <h6 class="smallest fw-bold text-muted text-uppercase mb-3">Health Risks</h6>
+            {% for d in patient_diagnoses %}
+                <div class="p-2 rounded-3 mb-2 small border-start border-3 {% if 'High' in d.malaria_risk %}border-danger bg-danger bg-opacity-10{% else %}border-success bg-light{% endif %}">
+                    <div class="fw-bold">{{ d.malaria_risk }} Risk</div>
+                    <div class="smallest text-muted">{{ d.symptoms|truncatechars:50 }}</div>
+                </div>
+            {% endfor %}
+            <a href="{% url 'patient_record_detail' target_user.id %}" target="_blank" class="btn btn-sm btn-main w-100 mt-3 rounded-pill">View Full Chart</a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Local Video (Picture-in-Picture) -->
+    <div class="local-v-pip shadow-lg" id="localPip">
+        <video id="localVideo" autoplay muted playsinline></video>
+    </div>
+
+    <!-- Minimalist Bottom Controls -->
+    <div class="bottom-controls animate-slide-up">
+        <button id="toggleMic" class="control-circle" title="Mute/Unmute">
+            <i class="bi bi-mic-fill"></i>
+        </button>
+        <button id="toggleCamera" class="control-circle" title="Camera On/Off">
+            <i class="bi bi-camera-video-fill"></i>
+        </button>
+        <button id="hangUp" class="control-circle hangup" title="End Call">
+            <i class="bi bi-telephone-x-fill"></i>
+        </button>
+    </div>
+</div>
 
         {% if request.user.role == 'doctor' %}
         <!-- Clinical HUD Sidebar (Doctor Only) -->
@@ -89,21 +115,67 @@
 </div>
 
 <style>
-    .backdrop-blur { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
-    .local-video-pip { width: 140px; height: 100px; }
-    .control-btn { width: 45px; height: 45px; }
-    .hangup-btn { width: 50px; height: 50px; }
-    
-    @media (min-width: 768px) {
-        .local-video-pip { width: 240px; height: 160px; }
-        .control-btn { width: 55px; height: 55px; }
-        .hangup-btn { width: 60px; height: 60px; }
-        .main-video-container { height: 85vh; }
+    body { background: #000; overflow: hidden; }
+    .whatsapp-video-container { 
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+        background: #000; z-index: 9999; 
     }
-    
-    @media (max-width: 767px) {
-        .main-video-container { height: 90vh; }
+    .remote-video { 
+        width: 100%; height: 100%; object-fit: cover; 
     }
+    .video-overlay {
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 20%, transparent 80%, rgba(0,0,0,0.6) 100%);
+        pointer-events: none;
+    }
+    .top-info {
+        position: absolute; top: 0; left: 0; right: 0; padding: 30px;
+        z-index: 20;
+    }
+    .local-v-pip {
+        position: absolute; top: 100px; right: 20px;
+        width: 120px; height: 180px; border-radius: 15px;
+        overflow: hidden; border: 2px solid rgba(255,255,255,0.2);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        z-index: 100;
+        transition: all 0.3s ease;
+    }
+    .local-v-pip video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+    
+    .bottom-controls {
+        position: absolute; bottom: 50px; left: 0; right: 0;
+        display: flex; justify-content: center; gap: 25px;
+        z-index: 20;
+    }
+    .control-circle {
+        width: 60px; height: 60px; border-radius: 50%;
+        border: none; background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px); color: white;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem; transition: all 0.2s;
+    }
+    .control-circle:hover { background: rgba(255,255,255,0.4); transform: scale(1.1); }
+    .control-circle.active-off { background: #ea4335 !important; }
+    .control-circle.hangup { background: #ff3b30; font-size: 1.8rem; width: 70px; height: 70px; margin-top: -5px; }
+
+    .animate-fade-in { animation: fadeIn 0.8s ease; }
+    .animate-slide-up { animation: slideUp 0.5s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    @media (max-width: 768px) {
+        .local-v-pip { width: 90px; height: 135px; top: 80px; right: 15px; }
+        .control-circle { width: 50px; height: 50px; font-size: 1.2rem; }
+        .control-circle.hangup { width: 60px; height: 60px; }
+    }
+
+    .records-overlay {
+        position: absolute; top: 100px; left: -350px;
+        width: 320px; height: 400px; background: white;
+        border-radius: 20px; z-index: 500;
+        transition: left 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .records-overlay.active { left: 20px; }
 </style>
 
 <script>
@@ -200,19 +272,33 @@
     };
 
     // Controls
+    const urlParams = new URLSearchParams(window.location.search);
+    const audioOnly = urlParams.get('active_call') === 'audio';
+
     document.getElementById('toggleMic').onclick = () => {
         const audioTrack = localStream.getAudioTracks()[0];
         audioTrack.enabled = !audioTrack.enabled;
-        document.getElementById('toggleMic').classList.toggle('btn-danger');
-        document.getElementById('toggleMic').classList.toggle('btn-light');
+        document.getElementById('toggleMic').classList.toggle('active-off');
     };
 
     document.getElementById('toggleCamera').onclick = () => {
         const videoTrack = localStream.getVideoTracks()[0];
         videoTrack.enabled = !videoTrack.enabled;
-        document.getElementById('toggleCamera').classList.toggle('btn-danger');
-        document.getElementById('toggleCamera').classList.toggle('btn-light');
+        document.getElementById('toggleCamera').classList.toggle('active-off');
+        document.getElementById('localPip').classList.toggle('d-none');
     };
+
+    if (audioOnly) {
+        // Initial state for audio call
+        setTimeout(() => {
+            document.getElementById('toggleCamera').click();
+        }, 1000);
+    }
+
+    function toggleRecords() {
+        const overlay = document.getElementById('recordsOverlay');
+        if (overlay) overlay.classList.toggle('active');
+    }
 
     document.getElementById('hangUp').onclick = () => {
         window.history.back();

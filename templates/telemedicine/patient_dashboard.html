@@ -152,6 +152,14 @@
 
                     <p class="mb-3 text-secondary mt-2 small"><strong>My Request:</strong> "{{ req.patient_notes }}"</p>
                     
+                    {% if req.lab_report %}
+                    <div class="mb-3">
+                        <a href="{{ req.lab_report.url }}" target="_blank" class="btn btn-sm btn-outline-main rounded-pill px-3 py-1 smaller">
+                            <i class="bi bi-file-earmark-pdf-fill text-danger me-1"></i> View Lab Report
+                        </a>
+                    </div>
+                    {% endif %}
+                    
                     {% if req.status == 'reviewed' %}
                         <div class="mt-4 p-0 border-0 shadow-sm rounded-4 overflow-hidden bg-white border border-light">
                             <div class="bg-light p-3 border-bottom d-flex justify-content-between align-items-center">

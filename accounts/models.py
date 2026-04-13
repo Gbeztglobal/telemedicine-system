@@ -13,6 +13,7 @@ class User(AbstractUser):
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='patient')
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default='male')
     phone_number = models.CharField(max_length=15, blank=False, null=False)
+    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
 
     @property
     def profile_picture(self):
@@ -21,8 +22,11 @@ class User(AbstractUser):
 
     @property
     def avatar_url(self):
-        # Using DiceBear Avataaars style
-        # Defensive check for gender to prevent potential attribute errors
+        # Prefer uploaded avatar if it exists
+        if self.avatar:
+            return self.avatar.url
+            
+        # Fallback to DiceBear Avataaars style
         gender_seed = getattr(self, 'gender', 'male') or 'male'
         username_seed = getattr(self, 'username', 'guest')
         style = "avataaars"

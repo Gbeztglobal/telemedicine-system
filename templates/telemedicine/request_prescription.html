@@ -7,11 +7,17 @@
             <h3 class="theme-header text-center"><i class="bi bi-file-medical"></i> Request Prescription</h3>
             <p class="text-muted text-center">Describe the medication you need or the symptoms you are targeting.</p>
             
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="mb-4">
                     <label class="form-label fw-bold">Prescription Details / Need <span class="text-danger">*</span></label>
                     <textarea class="form-control" name="patient_notes" rows="4" required placeholder="Describe what medication you need..."></textarea>
+                </div>
+
+                <div class="mb-4 p-3 bg-light border-dashed rounded-3 text-center">
+                    <label class="form-label d-block fw-bold"><i class="bi bi-cloud-upload me-2 text-main-theme"></i> Attachment (Optional)</label>
+                    <p class="small text-muted mb-3">Upload your lab report or clinical document (PDF/Image)</p>
+                    <input type="file" class="form-control shadow-none" name="lab_report" accept="image/*,.pdf">
                 </div>
                 
                 <div class="d-grid gap-2">

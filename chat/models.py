@@ -6,6 +6,7 @@ class Message(models.Model):
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
     text_content = models.TextField(blank=True, null=True)
     voice_note = models.FileField(upload_to='voice_notes/', blank=True, null=True)
+    media_file = models.FileField(upload_to='chat_media/', blank=True, null=True)
     parent_message = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='replies')
     is_edited = models.BooleanField(default=False)
     is_deleted = models.BooleanField(default=False)

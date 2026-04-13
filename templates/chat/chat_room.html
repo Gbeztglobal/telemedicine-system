@@ -17,7 +17,10 @@
                         <small class="text-muted d-block text-truncate"><i class="bi bi-shield-check text-main-theme"></i> {{ target_user.get_role_display }}</small>
                     </div>
                 </div>
-                <div class="flex-shrink-0 ms-2">
+                <div class="flex-shrink-0 ms-2 d-flex gap-2">
+                    <a href="{% url 'video_call' target_user.id %}?active_call=audio" class="btn btn-light rounded-circle border shadow-sm p-2" title="Audio Call">
+                        <i class="bi bi-telephone-fill text-main-theme fs-5"></i>
+                    </a>
                     <a href="{% url 'video_call' target_user.id %}" class="btn btn-accent rounded-pill px-3 px-md-4 fw-bold shadow-sm d-flex align-items-center">
                         <i class="bi bi-camera-video-fill me-md-2"></i>
                         <span class="d-none d-md-inline">Video Call</span>
@@ -58,6 +61,23 @@
                                         </div>
                                     </div>
                                     <small class="smallest fw-bold opacity-75 duration-text">0:00</small>
+                                </div>
+                            {% endif %}
+                            
+                            {% if msg.media_file %}
+                                <div class="mt-2 text-center">
+                                    {% if ".jpg" in msg.media_file.url|lower or ".png" in msg.media_file.url|lower or ".jpeg" in msg.media_file.url|lower or ".gif" in msg.media_file.url|lower or ".webp" in msg.media_file.url|lower %}
+                                        <a href="{{ msg.media_file.url }}" target="_blank">
+                                            <img src="{{ msg.media_file.url }}" class="img-fluid rounded-3 shadow-sm border" style="max-height: 250px;">
+                                        </a>
+                                    {% else %}
+                                        <div class="p-3 bg-light rounded-3 border d-flex align-items-center justify-content-center">
+                                            <i class="bi bi-file-earmark-richtext fs-1 me-2 text-main-theme"></i>
+                                            <a href="{{ msg.media_file.url }}" target="_blank" class="text-main-theme fw-bold text-decoration-none small text-truncate" style="max-width: 150px;">
+                                                View Attachment
+                                            </a>
+                                        </div>
+                                    {% endif %}
                                 </div>
                             {% endif %}
                             
@@ -103,13 +123,20 @@
                     <button class="btn border-0 text-muted" type="button" id="emoji-btn" title="Emojis">
                         <i class="bi bi-emoji-smile fs-4"></i>
                     </button>
-                    <button class="btn border-0 text-muted d-none d-md-block" type="button" id="voice-record-btn" title="Record Voice Note">
+                    <button class="btn border-0 text-muted" type="button" id="media-btn" title="Attach Media">
+                        <i class="bi bi-plus-circle-fill fs-4"></i>
+                    </button>
+                    <input type="file" id="media-input" class="d-none" accept="image/*,video/*,.pdf,.doc,.docx">
+                    <button class="btn border-0 text-muted" type="button" id="voice-record-btn" title="Record Voice Note">
                         <i class="bi bi-mic-fill fs-4" id="mic-icon"></i>
                     </button>
                     <input type="text" id="chat-input" class="form-control border-0 bg-light py-2" style="font-size: 1rem;" placeholder="Type your message..." aria-label="Chat input">
                     <button class="btn btn-main rounded-circle ms-1 ms-md-2 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;" type="button" id="chat-send-btn">
                         <i class="bi bi-send-fill text-white"></i>
                     </button>
+                </div>
+                <div id="recording-status" class="small text-danger fw-bold mt-1 d-none px-4">
+                    <span class="animate-pulse-fast">● Recording...</span> <span id="record-timer">0:00</span>
                 </div>
             </div>
         </div>
@@ -190,6 +217,29 @@
                 ${replyHtml}
                 <div class="msg-bubble ${isMe ? 'bg-main-theme text-black fw-bold rounded-start-4 rounded-top-4 shadow-sm' : 'bg-white text-dark rounded-end-4 rounded-top-4 shadow-sm border'} p-3">
                     <p class="mb-1 msg-text" style="font-size: 1.05rem;">${data.message || ''}</p>
+                    ${data.voice_url ? `
+                        <div class="voice-player-premium mt-2 p-2 rounded-pill bg-dark bg-opacity-10 d-flex align-items-center" style="min-width: 200px;">
+                            <button class="btn btn-sm btn-main rounded-circle play-pause-btn me-2" onclick="toggleAudio(this, '${data.voice_url}')">
+                                <i class="bi bi-play-fill text-white"></i>
+                            </button>
+                            <div class="flex-grow-1 position-relative me-2">
+                                <div class="progress" style="height: 4px; background: rgba(0,0,0,0.1);">
+                                    <div class="progress-bar bg-accent" role="progressbar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <small class="smallest fw-bold opacity-75 duration-text">0:00</small>
+                        </div>` : ''}
+                    ${data.media_url ? `
+                        <div class="mt-2 text-center">
+                            ${data.media_url.match(/\.(jpeg|jpg|gif|png|webp)/i) ? `
+                                <a href="${data.media_url}" target="_blank">
+                                    <img src="${data.media_url}" class="img-fluid rounded-3 shadow-sm border" style="max-height: 250px;">
+                                </a>` : `
+                                <div class="p-3 bg-light rounded-3 border d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-file-earmark-richtext fs-1 me-2 text-main-theme"></i>
+                                    <a href="${data.media_url}" target="_blank" class="text-main-theme fw-bold text-decoration-none small text-truncate" style="max-width: 150px;">View Attachment</a>
+                                </div>`}
+                        </div>` : ''}
                     <div class="d-flex justify-content-between align-items-center mt-1">
                         <small class="edit-badge d-none opacity-50 me-2" style="font-size: 0.6rem;">(edited)</small>
                         <small class="${isMe ? 'text-dark opacity-50' : 'text-muted'} d-block text-end" style="font-size: 0.7rem;">${data.timestamp || 'Just now'}</small>
@@ -344,6 +394,118 @@
             durationText.innerText = '0:00';
         };
     }
+
+    // Emojis, Voice, and Media Logic
+    // Load Emoji Picker
+    const script = document.createElement('script');
+    script.src = "https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.4/dist/index.min.js";
+    script.onload = () => {
+        const picker = new EmojiButton({
+            position: 'top-start',
+            theme: 'light'
+        });
+        const trigger = document.querySelector('#emoji-btn');
+        picker.on('emoji', selection => {
+            document.querySelector('#chat-input').value += selection.emoji;
+        });
+        trigger.addEventListener('click', () => picker.togglePicker(trigger));
+    };
+    document.head.appendChild(script);
+
+    // Media Upload Logic
+    const mediaBtn = document.getElementById('media-btn');
+    const mediaInput = document.getElementById('media-input');
+    
+    mediaBtn.onclick = () => mediaInput.click();
+    mediaInput.onchange = async () => {
+        if (!mediaInput.files.length) return;
+        const file = mediaInput.files[0];
+        const formData = new FormData();
+        formData.append('media_file', file);
+        formData.append('receiver_id', targetUserId);
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+        try {
+            mediaBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            const resp = await fetch('/chat/media-upload/', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await resp.json();
+            if (data.status === 'success') {
+                chatSocket.send(JSON.stringify({
+                    'action': 'send_message',
+                    'media_url': data.url,
+                    'message': `Sent a file: ${file.name}`
+                }));
+            }
+        } catch (err) { console.error(err); }
+        mediaBtn.innerHTML = '<i class="bi bi-plus-circle-fill fs-4"></i>';
+        mediaInput.value = '';
+    };
+
+    // Voice Note Logic
+    let mediaRecorder;
+    let audioChunks = [];
+    let recordInterval;
+    const recordBtn = document.getElementById('voice-record-btn');
+    const micIcon = document.getElementById('mic-icon');
+    const recordStatus = document.getElementById('recording-status');
+    const recordTimer = document.getElementById('record-timer');
+
+    recordBtn.onclick = async () => {
+        if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                
+                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const formData = new FormData();
+                    formData.append('voice_note', audioBlob, 'voice.webm');
+                    formData.append('receiver_id', targetUserId);
+                    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+                    try {
+                        const resp = await fetch('{% url "voice_note_upload" %}', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        const data = await resp.json();
+                        if (data.status === 'success') {
+                            chatSocket.send(JSON.stringify({
+                                'action': 'send_message',
+                                'voice_url': data.url
+                            }));
+                        }
+                    } catch (err) { console.error(err); }
+                };
+
+                mediaRecorder.start();
+                micIcon.classList.replace('bi-mic-fill', 'bi-stop-circle-fill');
+                micIcon.classList.add('text-danger');
+                recordStatus.classList.remove('d-none');
+                
+                let seconds = 0;
+                recordInterval = setInterval(() => {
+                    seconds++;
+                    const mins = Math.floor(seconds / 60);
+                    const secs = seconds % 60;
+                    recordTimer.innerText = `${mins}:${secs.toString().padStart(2,'0')}`;
+                }, 1000);
+            } catch (err) { alert("Microphone access denied"); }
+        } else {
+            mediaRecorder.stop();
+            mediaRecorder.stream.getTracks().forEach(t => t.stop());
+            micIcon.classList.replace('bi-stop-circle-fill', 'bi-mic-fill');
+            micIcon.classList.remove('text-danger');
+            recordStatus.classList.add('d-none');
+            clearInterval(recordInterval);
+            recordTimer.innerText = "0:00";
+        }
+    };
 
     document.querySelectorAll('.msg-container').forEach(initSwipe);
     document.getElementById('chat-send-btn').onclick = sendMessage;

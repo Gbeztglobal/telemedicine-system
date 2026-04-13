@@ -49,3 +49,26 @@ def analyze_symptoms(symptoms_text, prescriptions_text=""):
         'cholera_risk': cholera_risk,
         'suggested_steps': " ".join(steps)
     }
+
+def generate_consultation_summary(patient_name, symptoms, malaria_risk, cholera_risk):
+    """
+    Generates a professional clinical summary for the doctor.
+    """
+    summary = f"MEDICAL CONSULTATION SUMMARY\n"
+    summary += f"Patient: {patient_name}\n"
+    summary += f"Condition: Assessment for Malaria/Cholera\n\n"
+    
+    summary += f"CLINICAL PRESENTATION:\n"
+    summary += f"The patient presents with the following reported symptoms: {symptoms}.\n\n"
+    
+    summary += f"AI DIAGNOSTIC ASSESSMENT:\n"
+    summary += f"- Malaria Risk: {malaria_risk}\n"
+    summary += f"- Cholera Risk: {cholera_risk}\n\n"
+    
+    summary += f"RECOMMENDATION:\n"
+    if malaria_risk == 'High' or cholera_risk == 'High':
+        summary += "Immediate clinical intervention and lab confirmation required. Patient is in a high-risk category. Monitor vital signs closely."
+    else:
+        summary += "Baseline observation. If symptoms persist or worsen within 48 hours, escalate to full diagnostic panel."
+        
+    return summary
